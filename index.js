@@ -186,6 +186,29 @@ function parseCurationLines(text) {
   return rows
 }
 
+function parsePluginCuration(text) {
+  const raw = String(text ?? '').trim()
+  const start = raw.indexOf('{')
+  const end = raw.lastIndexOf('}')
+  if (start < 0 || end <= start) return []
+  let data
+  try { data = JSON.parse(raw.slice(start, end + 1)) } catch { return [] }
+  const rows = []
+  for (const group of Array.isArray(data?.groups) ? data.groups : []) {
+    const label = cleanText(group?.label).slice(0, 8)
+    const question = cleanText(group?.question).slice(0, 30)
+    const items = Array.isArray(group?.items) ? group.items : []
+    for (const item of items) {
+      const i = Number(item?.i ?? item?.id ?? item?.candidateId)
+      const quote = cleanText(item?.quote ?? item?.text)
+      if (!Number.isInteger(i) || i <= 0 || !quote) continue
+      rows.push({ i, quote, why: '', group: label || question ? { label, question } : null })
+    }
+  }
+  rows.topic = cleanText(data?.topic).slice(0, 40)
+  return rows
+}
+
 async function getManifest() {
   if (manifestCache.value && Date.now() - manifestCache.at < 60 * 60_000) return manifestCache.value
   const response = await fetch(MANIFEST_URL, { signal: AbortSignal.timeout(15_000) })
@@ -671,12 +694,12 @@ const CURATE_SYSTEM = [
 ].join('\n')
 
 const PLUGIN_CURATE_SYSTEM = [
-  '你是「知乎 × 全网」检索结果的编辑，这次面对的是一个 DSH 插件。把候选里真正能帮用户判断“装不装”的内容挑出来，按评价视角分组。',
-  '优先考虑这些视角：真实体验与优点、局限/风险/踩坑、替代方案、适合谁、安装注意。没有证据的视角不要硬编，也不要为了凑组把不相关的句子塞进来。',
+  '你是「知乎 × 全网」检索结果的编辑，负责插件评测。把候选里真正能帮用户判断“装不装”的内容挑出来，按评价视角分组。',
+  '优先考虑这些视角：核心卖点、真实体验、局限/风险/踩坑、替代方案、适合谁、安装注意。没有证据的视角不要硬编，也不要为了凑组把不相关的句子塞进来。',
   '官方简介和安装命令只能当背景，不能当成社区评价；组问题和摘句都必须来自候选原文。',
   '',
   '【每组选什么】',
-  '- 组问题要像用户会问的一句话，例如“装过的人觉得值吗？”“最容易踩的坑是什么？”“同类插件怎么选？”',
+  '- 组问题要像用户会问的一句话，例如“它到底解决什么问题？”“装过的人怎么评价？”“最容易踩的坑是什么？”“同类插件怎么选？”',
   '- 每条摘 1-2 句逐字原文，必须能直接回答该组问题；同话题但只是背景的句子不要放。',
   '- 摘不到 2 条好句的视角就删掉；宁少勿杂。',
   '',
@@ -685,13 +708,9 @@ const PLUGIN_CURATE_SYSTEM = [
   '- 原文从候选正文逐字复制，不改写、不概括、不拼接；20-100 字，编号照抄候选的 # 编号。',
   '- 同一个候选只能出现一次。',
   '',
-  '【输出格式】只输出下面这些行，第一行就是数据，不要解释、标题或空行：',
-  '主题|这个插件值不值得装？',
-  '组|2-4字短标签|这一组的问题，6-18 字，以问号结尾',
-  '编号|原文',
-  '编号|原文',
-  '组|短标签|问题',
-  '编号|原文',
+  '【输出格式】只输出一个 JSON 对象，不要 Markdown 标题、代码块、解释或空行：',
+  '{"topic":"这个插件值不值得装？","groups":[{"label":"真实体验","question":"装过的人怎么评价？","items":[{"i":1,"quote":"..."},{"i":2,"quote":"..."}]},{"label":"局限与风险","question":"最容易踩的坑是什么？","items":[{"i":3,"quote":"..."}]}]}',
+  '其中 i 是候选的 # 编号；quote 必须是候选原文里的连续句子。',
 ].join('\n')
 
 function curationPrompt(query, candidates, context = '') {
@@ -974,11 +993,20 @@ export function apply(ctx, config = {}) {
       reasoningEffort: 'off',
       label: 'curate',
     })
-    const selections = text ? parseCurationLines(text) : []
+    let selections = []
+    if (text) {
+      selections = context ? parsePluginCuration(text) : parseCurationLines(text)
+      if (context && !selections.length) selections = parseCurationLines(text)
+    }
     const curated = selections.length ? applyCuration(candidates, selections) : []
-    const cards = curated.length ? curated : applyCuration(candidates, heuristicCuration(candidates))
-    if (curated.length) return { cards, topic: cleanText(selections.topic ?? '').slice(0, 40), source: 'llm' }
-    return { cards, topic: '', source: 'heuristic' }
+    let cards = curated.length ? curated : applyCuration(candidates, heuristicCuration(candidates))
+    if (context && cards.length) {
+      const fallbackGroup = { label: '其他评价', question: '还有哪些值得看的观点？' }
+      cards = cards.map((card) => (card.group ? card : { ...card, group: fallbackGroup }))
+    }
+    const topic = cleanText(selections.topic ?? '').slice(0, 40) || (context ? '这个插件值不值得装？' : '')
+    if (curated.length) return { cards, topic, source: 'llm' }
+    return { cards, topic: context ? '这个插件值不值得装？' : '', source: 'heuristic' }
   }
 
   const handler = async (req, res) => {

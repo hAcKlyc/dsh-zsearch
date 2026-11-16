@@ -91,6 +91,24 @@ function makeLlm(calls, behavior = {}) {
           yield { type: 'text-delta', text: '测试问题 安装 配置\nDSH plugin install guide' }
           return
         }
+        if (system.includes('检索结果的编辑') && system.includes('插件评测')) {
+          calls.curate += 1
+          calls.curateMaxTokens = options.maxTokens
+          const rows = curationCandidates(textOf(options.messages?.[0]))
+          if (rows.length < 2) return
+          const [a, b] = rows
+          yield {
+            type: 'text-delta',
+            text: JSON.stringify({
+              topic: '这个插件值不值得装？',
+              groups: [
+                { label: '真实体验', question: '装过的人怎么评价？', items: [{ i: a.id, quote: firstSentences(a.text) }] },
+                { label: '局限与风险', question: '最容易踩的坑是什么？', items: [{ i: b.id, quote: firstSentences(b.text) }] },
+              ],
+            }),
+          }
+          return
+        }
         if (system.includes('检索结果的编辑')) {
           calls.curate += 1
           calls.curateMaxTokens = options.maxTokens
@@ -497,6 +515,10 @@ async function main() {
   assert.ok(byName(pluginRun.events, 'plan')[0], 'plugin plan event')
   assert.ok(pluginCalls.curate > 0, 'plugin curation prompt ran')
   assert.ok(pluginCalls.answer > 0, 'plugin answer prompt ran')
+  assert.equal(byName(pluginRun.events, 'topic')[0].topic, '这个插件值不值得装？')
+  const pluginCards = cards(pluginRun.events)
+  assert.equal(pluginCards[0].group.label, '真实体验')
+  assert.equal(pluginCards[1].group.label, '局限与风险')
 
   console.log('server integration ok')
   console.log(`  calls: expand=${calls.expand} curate=${calls.curate} answer=${calls.answer} backfill=${calls.backfill}`)
