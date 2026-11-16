@@ -1,0 +1,6 @@
+- insert:
+    - id: dsh-zsearch
+      name: dsh-zsearch
+      config:
+        debug: false
+        cacheMinutes: 10

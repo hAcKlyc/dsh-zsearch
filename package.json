@@ -1,0 +1,62 @@
+{
+  "name": "dsh-zsearch",
+  "version": "0.2.0",
+  "type": "module",
+  "description": "Search DeepSeek Harness topics and the wider web, then read a streamed AI answer beside the evidence it cites.",
+  "license": "MIT",
+  "author": "Ethan L",
+  "homepage": "https://github.com/hAcKlyc/dsh-zsearch#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hAcKlyc/dsh-zsearch.git"
+  },
+  "bugs": {
+    "url": "https://github.com/hAcKlyc/dsh-zsearch/issues"
+  },
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "dsh-plugin",
+    "cordis",
+    "zhihu",
+    "search"
+  ],
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg",
+    "README.md",
+    "CHANGELOG.md",
+    "docs/DETAIL.md"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true
+    }
+  },
+  "engines": {
+    "dsh": ">=0.2.2-rc.3 <0.3.0",
+    "node": ">=24.9.0"
+  },
+  "scripts": {
+    "check": "node --check index.js && node --check client.js",
+    "test": "node test/integration.mjs && node test/client-smoke.mjs && node test/client-render.mjs",
+    "verify": "npm run check && npm test",
+    "prepublishOnly": "npm run verify"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
