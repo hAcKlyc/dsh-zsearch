@@ -1,6 +1,6 @@
 # dsh-zsearch
 
-在 DeepSeek Harness 中同时检索知乎与全网：左侧是流式 AI 综述，右侧是可逐字核对的引用来源。回答里的 `[1]`、`[2]` 角标可以点击，直接定位到证据卡。
+ZSearch 是 DeepSeek Harness 里的智能搜索插件：在 DSH 中同时检索知乎与全网，左侧是流式 AI 综述，右侧是可逐字核对的引用来源。回答里的 `[1]`、`[2]` 角标可以点击，直接定位到证据卡。
 
 ## 功能
 
@@ -13,12 +13,14 @@
 
 ## 安装
 
-桌面端：**Plugins → Add plugin**，输入 `dsh-zsearch`，或选择本地目录。安装/更新 Host 代码后重启 DSH。
+当前 npm 包尚未发布，推荐从源码目录安装。
+
+桌面端：**Plugins → Add plugin**，选择 `dsh-zsearch` 目录。安装/更新 Host 代码后重启 DSH。
 
 CLI：
 
 ```sh
-dsh plugin --profile <profile> add dsh-zsearch
+dsh plugin --profile <profile> add ./dsh-zsearch
 ```
 
 ## 环境要求
