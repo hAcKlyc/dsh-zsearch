@@ -3,7 +3,7 @@
   "version": "0.2.0",
   "type": "module",
   "description": "Search DeepSeek Harness topics and the wider web, then read a streamed AI answer beside the evidence it cites.",
-  "license": "MIT",
+  "license": "Apache-2.0",
   "author": "Ethan L",
   "homepage": "https://github.com/hAcKlyc/dsh-zsearch#readme",
   "repository": {
@@ -47,7 +47,7 @@
     }
   },
   "engines": {
-    "dsh": ">=0.2.2-rc.3 <0.3.0",
+    "dsh": ">=0.2.2-rc.1 <0.3.0",
     "node": ">=24.9.0"
   },
   "scripts": {

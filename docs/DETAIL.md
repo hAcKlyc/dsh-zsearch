@@ -23,7 +23,7 @@ dsh plugin --profile <profile> add dsh-zsearch
 
 ## 环境要求
 
-- DeepSeek Harness `>=0.2.2-rc.3 <0.3.0`。
+- DeepSeek Harness `>=0.2.2-rc.1 <0.3.0`。
 - Node.js `>=24.9.0`。
 - 本机 `zhihu-cli` 与知乎 Access Secret；首次使用会显示三步引导。
 - DSH 中已配置可用的默认模型。
@@ -38,7 +38,7 @@ dsh plugin --profile <profile> add dsh-zsearch
 
 ## 兼容与限制
 
-- 已在 DSH `0.2.2-rc.3` 上验证。
+- 兼容 DSH `0.2.2-rc.1` 起；已在 `0.2.2-rc.3` 上验证。
 - 回答基于候选原文生成，右栏是筛选摘句，不保证逐字同源。
 - 回答输入约 1.3 万字符，成本和延迟高于轻量检索。
 - 回答被 provider 中断或超时时保留已生成部分，不自动续写。
@@ -49,4 +49,4 @@ dsh plugin --profile <profile> add dsh-zsearch
 
 ## 许可证
 
-MIT
+Apache-2.0
