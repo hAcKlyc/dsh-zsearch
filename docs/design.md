@@ -89,10 +89,6 @@
 
 ![顶栏修正预览：搜索提交按钮恢复 30px](topbar-fixed.png)
 
-### Onboarding 静态预览
-
-![Onboarding 静态预览（真实 CSS/结构生成）](onboarding.png)
-
 ### 首页静态预览
 
 用 0.2.0 的真实 CSS 与结构渲染，1456×1128：
