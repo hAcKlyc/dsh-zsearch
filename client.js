@@ -369,6 +369,84 @@ body[data-ds-dark-theme] .zs-root.zs-theme-light {
 .zs-chip svg { color:var(--zs-ink-3); transition:color .16s; }
 .zs-chip:hover { color:var(--zs-brand); background:var(--zs-surface); box-shadow:inset 0 0 0 .5px var(--zs-brand-ring), 0 6px 16px -8px rgba(5,109,232,.35); transform:translateY(-1px); }
 .zs-chip:hover svg { color:var(--zs-brand); }
+.zs-topics { display:flex; flex-direction:column; align-items:center; gap:8px; margin-top:24px; }
+.zs-topics-label { font-size:10px; letter-spacing:.18em; color:var(--zs-ink-3); text-transform:uppercase; }
+.zs-topic-entry { display:flex; align-items:center; gap:11px; width:min(680px,100%); padding:11px 14px; border-radius:14px;
+  border:0; cursor:pointer; text-align:left; color:var(--zs-ink); font:inherit;
+  background:color-mix(in srgb, var(--zs-surface) 78%, transparent);
+  box-shadow:inset 0 0 0 .5px var(--zs-line-2);
+  transition:box-shadow .16s, background .16s, transform .16s var(--zs-ease); }
+.zs-topic-entry:hover { background:var(--zs-surface); box-shadow:inset 0 0 0 .5px var(--zs-brand-ring), 0 8px 22px -14px rgba(5,109,232,.45); transform:translateY(-1px); }
+.zs-topic-entry-ico { flex:none; width:30px; height:30px; border-radius:10px; display:flex; align-items:center; justify-content:center;
+  color:var(--zs-brand); background:var(--zs-brand-soft); }
+.zs-topic-entry-main { flex:1; min-width:0; }
+.zs-topic-entry-title { display:block; font-size:13.5px; font-weight:650; }
+.zs-topic-entry-desc { display:block; margin-top:2px; font-size:11.5px; color:var(--zs-ink-3); }
+.zs-topic-entry > .zs-ico { flex:none; color:var(--zs-ink-3); }
+.zs-plugins { flex:1; min-height:0; overflow:auto; padding:26px clamp(20px,4vw,48px) 56px; background:var(--zs-bg); }
+.zs-plugins-head { display:flex; align-items:flex-start; gap:12px; max-width:1120px; margin:0 auto; }
+.zs-plugins-headtext { min-width:0; }
+.zs-plugins-title { margin:0; font-size:24px; line-height:1.3; font-weight:650; letter-spacing:-.01em; color:var(--zs-ink); }
+.zs-plugins-sub { margin:5px 0 0; font-size:12.5px; color:var(--zs-ink-3); }
+.zs-plugins-search { display:flex; align-items:center; gap:8px; max-width:1120px; height:38px; margin:18px auto; padding:0 12px;
+  border-radius:11px; background:var(--zs-sunken); box-shadow:inset 0 0 0 .5px var(--zs-line-2); }
+.zs-plugins-search .zs-ico { flex:none; color:var(--zs-ink-3); }
+.zs-plugins-search input { flex:1; min-width:0; border:0; outline:none; background:transparent; color:var(--zs-ink); font:inherit; font-size:13px; }
+.zs-plugins-search input::placeholder { color:var(--zs-ink-3); }
+.zs-plugin-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); gap:12px; max-width:1120px; margin:0 auto; }
+.zs-plugin-tile { display:flex; flex-direction:column; gap:8px; min-height:146px; padding:15px 16px; border:0; border-radius:15px;
+  cursor:pointer; text-align:left; color:var(--zs-ink); background:var(--zs-surface); font:inherit;
+  box-shadow:inset 0 0 0 .5px var(--zs-line-2), 0 2px 8px -6px rgba(15,23,42,.18);
+  transition:transform .16s var(--zs-ease), box-shadow .16s; }
+.zs-plugin-tile:hover { transform:translateY(-2px); box-shadow:inset 0 0 0 .5px var(--zs-brand-ring), 0 14px 28px -20px rgba(15,23,42,.35); }
+.zs-plugin-tile-top { display:flex; align-items:center; gap:8px; min-width:0; }
+.zs-plugin-tile-name { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:14.5px; font-weight:650; }
+.zs-plugin-tag { flex:none; margin-left:auto; max-width:48%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  padding:2px 7px; border-radius:999px; font-size:10px; color:var(--zs-ink-3); background:var(--zs-sunken); }
+.zs-plugin-tile-desc { display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
+  font-size:12.5px; line-height:1.6; color:var(--zs-ink-2); }
+.zs-plugin-tile-stats { display:flex; gap:12px; margin-top:auto; font-size:11px; color:var(--zs-ink-3); }
+.zs-plugins-note { max-width:1120px; margin:20px auto 0; font-size:11px; line-height:1.6; color:var(--zs-ink-3); }
+.zs-plugins-state { display:flex; flex-direction:column; align-items:center; gap:10px; max-width:1120px; margin:64px auto; text-align:center;
+  font-size:12.5px; color:var(--zs-ink-3); }
+.zs-plugins-state b { color:var(--zs-ink); font-size:14px; }
+.zs-plugin-card { margin:0 0 26px; padding:18px; border-radius:16px; background:var(--zs-surface);
+  box-shadow:inset 0 0 0 .5px var(--zs-line-2), 0 8px 24px -22px rgba(15,23,42,.3); }
+.zs-plugin-eyebrow { font-size:10px; letter-spacing:.16em; color:var(--zs-brand); text-transform:uppercase; }
+.zs-plugin-name { margin:6px 0 7px; font-size:24px; line-height:1.25; font-weight:650; letter-spacing:-.015em; color:var(--zs-ink); word-break:break-word; }
+.zs-plugin-meta { display:flex; flex-wrap:wrap; gap:10px; font-size:11.5px; color:var(--zs-ink-3); }
+.zs-plugin-desc { margin:12px 0 14px; font-size:13px; line-height:1.7; color:var(--zs-ink-2); }
+.zs-plugin-actions { display:flex; flex-wrap:wrap; align-items:center; gap:10px; }
+.zs-plugin-link { display:inline-flex; align-items:center; gap:4px; font-size:12px; color:var(--zs-brand); text-decoration:none; }
+.zs-plugin-link:hover { text-decoration:underline; }
+.zs-plugin-install { height:32px; padding:0 14px; border:0; border-radius:9px; cursor:pointer;
+  color:#fff; background:var(--zs-brand); font:inherit; font-size:12.5px; font-weight:600;
+  transition:transform .16s var(--zs-ease), opacity .16s; }
+.zs-plugin-install:hover:not([disabled]) { transform:translateY(-1px); }
+.zs-plugin-install[disabled] { opacity:.5; cursor:default; }
+.zs-plugin-code { display:block; margin-top:10px; padding:7px 9px; overflow:auto; white-space:nowrap;
+  border-radius:8px; background:var(--zs-sunken); color:var(--zs-ink-2); font-size:11px; }
+.zs-install-backdrop { position:fixed; inset:0; z-index:120; display:flex; align-items:center; justify-content:center; padding:24px;
+  background:rgba(15,23,42,.35); -webkit-backdrop-filter:blur(3px); backdrop-filter:blur(3px); }
+.zs-install-dialog { width:min(440px,100%); padding:20px; border-radius:18px; background:var(--zs-surface);
+  box-shadow:0 26px 70px -24px rgba(15,23,42,.55), inset 0 0 0 .5px var(--zs-line-2); }
+.zs-install-head { display:flex; align-items:center; gap:12px; }
+.zs-install-head h2 { flex:1; margin:0; font-size:16px; font-weight:650; color:var(--zs-ink); }
+.zs-install-close { flex:none; width:28px; height:28px; border:0; border-radius:8px; cursor:pointer; color:var(--zs-ink-3);
+  background:transparent; font-size:20px; line-height:1; }
+.zs-install-close:hover { background:var(--zs-sunken); color:var(--zs-ink); }
+.zs-install-text { margin:14px 0 0; font-size:13px; line-height:1.65; color:var(--zs-ink-2); }
+.zs-install-code { display:block; margin-top:10px; padding:8px 10px; overflow:auto; white-space:nowrap;
+  border-radius:8px; background:var(--zs-sunken); color:var(--zs-ink-2); font-size:11px; }
+.zs-install-warn { margin:12px 0 0; padding:10px 12px; border-radius:9px; font-size:11.5px; line-height:1.6;
+  color:#8a5a00; background:#fff7e6; }
+.zs-theme-dark .zs-install-warn { color:#f5c56b; background:rgba(245,197,107,.12); }
+.zs-install-error { margin:14px 0 0; font-size:12.5px; line-height:1.6; color:#c0392b; }
+.zs-install-actions { display:flex; justify-content:flex-end; flex-wrap:wrap; gap:8px; margin-top:18px; }
+.zs-install-btn { height:32px; padding:0 14px; border:0; border-radius:9px; cursor:pointer; font:inherit; font-size:12.5px;
+  color:var(--zs-ink-2); background:var(--zs-sunken); }
+.zs-install-btn:hover { color:var(--zs-ink); }
+.zs-install-btn.primary { color:#fff; background:var(--zs-brand); font-weight:600; }
 
 /* ---------- Topbar ---------- */
 .zs-topbar { display:flex; align-items:center; gap:10px; padding:12px 20px; min-height:62px;
@@ -725,6 +803,8 @@ body[data-ds-dark-theme] .zs-idx, body[data-ds-dark-theme] .zs-arrow { color:var
   .zs-body { flex-direction:column; overflow:auto; }
   .zs-left { width:auto; max-width:none; min-width:0; overflow:visible; border-right:0; border-bottom:.5px solid var(--zs-line-2); }
   .zs-right { overflow:visible; }
+  .zs-plugins { padding:20px 16px 40px; }
+  .zs-plugin-grid { grid-template-columns:1fr; }
 }
 @media (prefers-reduced-motion: reduce) {
   .zs-root *, .zs-root *::before, .zs-root *::after { animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; }
@@ -1334,7 +1414,7 @@ body[data-ds-dark-theme] .zs-idx, body[data-ds-dark-theme] .zs-arrow { color:var
       )
     }
 
-    function Home({ onSearch, setup, ready, onOpenSetup }) {
+    function Home({ onSearch, setup, ready, onOpenSetup, onOpenPlugins }) {
       const [value, setValue] = useState('')
       const examples = ['DSH 插件怎么安装', 'DeepSeek Harness 和 Cursor 怎么选', 'billion-context 值得装吗']
       const submit = () => { if (value.trim()) onSearch(value.trim()) }
@@ -1362,16 +1442,142 @@ body[data-ds-dark-theme] .zs-idx, body[data-ds-dark-theme] .zs-arrow { color:var
         h('div', { className: 'zs-chips zs-in d4' }, examples.map((text) => h('button', {
           key: text, className: 'zs-chip', type: 'button', onClick: () => onSearch(text),
         }, h(Icon, { name: 'search', size: 13 }), text))),
+        h('div', { className: 'zs-topics zs-in d4' },
+          h('span', { className: 'zs-topics-label' }, '专题'),
+          h('button', { className: 'zs-topic-entry', type: 'button', onClick: onOpenPlugins },
+            h('span', { className: 'zs-topic-entry-ico' }, h(Icon, { name: 'spark', size: 16 })),
+            h('span', { className: 'zs-topic-entry-main' },
+              h('span', { className: 'zs-topic-entry-title' }, '热门插件'),
+              h('span', { className: 'zs-topic-entry-desc' }, '按 GitHub Star 排序 · AI 评价 + 社区讨论')),
+            h(Icon, { name: 'out', size: 14 }))),
       )
     }
 
-    function Results({ query, runId, onSearch, onHome, setup, ready, showStats = true, onOpenSetup }) {
-      const saved = panelState
+    function InstallDialog({ state, plugin, onClose, onConfirm, onApprove }) {
+      if (!state) return null
+      const stage = state.stage
+      const pending = Array.isArray(state.result?.pendingBuilds) ? state.result.pendingBuilds : []
+      const title = stage === 'done'
+        ? '安装完成'
+        : stage === 'error'
+          ? '无法安装'
+          : stage === 'installing'
+            ? '正在安装'
+            : '安装这个插件？'
+      return h('div', { className: 'zs-install-backdrop', role: 'presentation', onClick: onClose },
+        h('section', {
+          className: 'zs-install-dialog', role: 'dialog', 'aria-label': title,
+          onClick: (event) => event.stopPropagation(),
+        },
+          h('div', { className: 'zs-install-head' },
+            h('h2', null, title),
+            h('button', { className: 'zs-install-close', type: 'button', onClick: onClose, 'aria-label': '关闭' }, '×')),
+          stage === 'loading'
+            ? h('p', { className: 'zs-install-text' }, '正在检查插件来源…')
+            : stage === 'installing'
+              ? h('p', { className: 'zs-install-text' }, '正在安装，pnpm 可能在拉包，请稍等…')
+              : stage === 'error'
+                ? h('p', { className: 'zs-install-error' }, state.message || '安装失败')
+                : stage === 'done'
+                  ? h('div', null,
+                    h('p', { className: 'zs-install-text' },
+                      state.result?.application === 'restart-required'
+                        ? '已安装，需要重启 DSH 才会生效。'
+                        : '已安装并激活。如果界面没变化，刷新一下页面。'),
+                    pending.length
+                      ? h('p', { className: 'zs-install-warn' }, `该插件有 ${pending.length} 个安装脚本被拦下：${pending.join('、')}。允许后才会执行。`)
+                      : null)
+                  : h('div', null,
+                    h('p', { className: 'zs-install-text' }, `将 ${plugin.name} 安装到当前 DSH Profile。`),
+                    h('code', { className: 'zs-install-code' }, state.spec || plugin.install || plugin.name),
+                    h('p', { className: 'zs-install-warn' }, '安装会把第三方代码装进当前 Profile，并可能要求重启。只安装你信任的插件；插件声明的能力由它自己使用。')),
+          h('div', { className: 'zs-install-actions' },
+            stage === 'confirm'
+              ? [h('button', { key: 'cancel', className: 'zs-install-btn', type: 'button', onClick: onClose }, '取消'),
+                h('button', { key: 'ok', className: 'zs-install-btn primary', type: 'button', onClick: onConfirm }, '确认安装')]
+              : stage === 'done' && pending.length
+                ? [h('button', { key: 'close', className: 'zs-install-btn', type: 'button', onClick: onClose }, '稍后'),
+                  h('button', { key: 'approve', className: 'zs-install-btn primary', type: 'button', onClick: () => onApprove(pending) }, '允许并重试')]
+                : h('button', { className: 'zs-install-btn primary', type: 'button', onClick: onClose }, '关闭')),
+        ))
+    }
+
+    function PluginCard({ plugin }) {
+      const [install, setInstall] = useState(null)
+      const spec = plugin.npm || plugin.repo || null
+
+      const startInstall = async () => {
+        if (!spec || install) return
+        setInstall({ stage: 'loading', spec })
+        try {
+          const response = await fetch(`/zsearch/api/plugins/install/inspect?pluginId=${encodeURIComponent(plugin.id)}`)
+          const body = await response.json()
+          if (!body.ok) {
+            setInstall({ stage: 'error', spec, message: body.result?.reason ?? body.message ?? body.code ?? '检查失败' })
+            return
+          }
+          setInstall({ stage: 'confirm', spec, info: body.result })
+        } catch (error) {
+          setInstall({ stage: 'error', spec, message: String(error?.message ?? error) })
+        }
+      }
+
+      const confirmInstall = async (approvedBuilds) => {
+        setInstall((prev) => ({ ...(prev ?? {}), stage: 'installing', spec }))
+        try {
+          const response = await fetch('/zsearch/api/plugins/install', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ pluginId: plugin.id, approvedBuilds }),
+          })
+          const body = await response.json()
+          if (!body.ok) {
+            setInstall((prev) => ({ ...(prev ?? {}), stage: 'error', message: body.error?.diagnostic ?? body.message ?? body.code ?? '安装失败' }))
+            return
+          }
+          setInstall((prev) => ({ ...(prev ?? {}), stage: 'done', result: body }))
+        } catch (error) {
+          setInstall((prev) => ({ ...(prev ?? {}), stage: 'error', message: String(error?.message ?? error) }))
+        }
+      }
+
+      return h('section', { className: 'zs-plugin-card' },
+        h('div', { className: 'zs-plugin-eyebrow' }, '插件评测'),
+        h('h1', { className: 'zs-plugin-name' }, plugin.name),
+        h('div', { className: 'zs-plugin-meta' },
+          h('span', null, plugin.category || '未分类'),
+          h('span', null, `★ ${fmtCount(plugin.stars)}`),
+          h('span', null, `↓ ${fmtCount(plugin.downloads)}/月`)),
+        h('p', { className: 'zs-plugin-desc' }, plugin.desc || '暂无简介'),
+        h('div', { className: 'zs-plugin-actions' },
+          plugin.repo
+            ? h('a', { className: 'zs-plugin-link', href: plugin.repo, target: '_blank', rel: 'noreferrer' },
+              'GitHub', h(Icon, { name: 'out', size: 12 }))
+            : null,
+          h('button', {
+            className: 'zs-plugin-install', type: 'button', onClick: startInstall,
+            disabled: !spec || Boolean(install && install.stage !== 'done' && install.stage !== 'error'),
+          }, '安装到当前 Profile')),
+        plugin.install ? h('code', { className: 'zs-plugin-code' }, plugin.install) : null,
+        install
+          ? h(InstallDialog, {
+            state: install,
+            plugin,
+            onClose: () => setInstall(null),
+            onConfirm: () => confirmInstall(undefined),
+            onApprove: (pending) => confirmInstall(pending),
+          })
+          : null,
+      )
+    }
+
+    function Results({ query, runId, onSearch, onHome, onBack, backLabel = '返回首页', setup, ready, showStats = true, onOpenSetup, plugin = null, pluginId = null, persist = true }) {
+      const saved = persist ? panelState : null
       const restored = saved && saved.view === 'results' && saved.query === query &&
         (saved.attempt ?? 0) === runId && saved.started === true && panelHasContent(saved)
         ? saved
         : null
-      const [value, setValue] = useState(query)
+      const [value, setValue] = useState(plugin ? '' : query)
       const [cards, setCards] = useState(() => (Array.isArray(restored?.cards) ? restored.cards : []))
       const [answer, setAnswer] = useState(typeof restored?.answer === 'string' ? restored.answer : '')
       const [plan, setPlan] = useState(restored?.plan ?? null)
@@ -1386,10 +1592,10 @@ body[data-ds-dark-theme] .zs-idx, body[data-ds-dark-theme] .zs-arrow { color:var
       const latestRef = useRef(null)
 
       useEffect(() => {
-        const current = panelState
-        if (current && current.view === 'home') return undefined
-        if (current && (current.attempt ?? 0) !== runId) return undefined
-        const canRestore = current && current.view === 'results' && current.query === query &&
+        const current = persist ? panelState : null
+        if (persist && current && current.view === 'home') return undefined
+        if (persist && current && (current.attempt ?? 0) !== runId) return undefined
+        const canRestore = persist && current && current.view === 'results' && current.query === query &&
           current.started === true && panelHasContent(current)
         if (canRestore) {
           setValue(query)
@@ -1405,7 +1611,7 @@ body[data-ds-dark-theme] .zs-idx, body[data-ds-dark-theme] .zs-arrow { color:var
           return undefined
         }
         let closed = false
-        setValue(query)
+        setValue(plugin ? '' : query)
         setCards([])
         setAnswer('')
         setPlan(null)
@@ -1417,19 +1623,22 @@ body[data-ds-dark-theme] .zs-idx, body[data-ds-dark-theme] .zs-arrow { color:var
         setCitationMap({})
         setCitationsFinal(false)
         setAnswerStatus(null)
-        updatePanel({
-          query,
-          attempt: runId,
-          started: true,
-          phase: 'running',
-          cards: [],
-          answer: '',
-          plan: null,
-          error: null,
-          interrupted: false,
-        })
+        if (persist) {
+          updatePanel({
+            query,
+            attempt: runId,
+            started: true,
+            phase: 'running',
+            cards: [],
+            answer: '',
+            plan: null,
+            error: null,
+            interrupted: false,
+          })
+        }
         const refresh = settings.forceRefresh ? '&refresh=1' : ''
-        const source = new EventSource(`/zsearch/api/stream?q=${encodeURIComponent(query)}${refresh}`)
+        const pluginMode = pluginId ? `&mode=plugin&pluginId=${encodeURIComponent(pluginId)}` : ''
+        const source = new EventSource(`/zsearch/api/stream?q=${encodeURIComponent(query)}${pluginMode}${refresh}`)
         const parse = (event) => JSON.parse(event.data)
         source.addEventListener('plan', (event) => { if (!closed) setPlan(parse(event)) })
         source.addEventListener('topic', (event) => {
@@ -1477,7 +1686,7 @@ body[data-ds-dark-theme] .zs-idx, body[data-ds-dark-theme] .zs-arrow { color:var
           closed = true
           source.close()
         }
-      }, [query, runId])
+      }, [query, runId, pluginId, persist])
 
       useEffect(() => {
         if (!flash) return undefined
@@ -1486,19 +1695,21 @@ body[data-ds-dark-theme] .zs-idx, body[data-ds-dark-theme] .zs-arrow { color:var
       }, [flash])
 
       useEffect(() => {
+        if (!persist) return undefined
         latestRef.current = { query, attempt: runId, cards, answer, plan, error, running, interrupted, citationMap, citationsFinal, answerStatus }
         const timer = setTimeout(() => savePanelResults(latestRef.current), 350)
         return () => clearTimeout(timer)
-      }, [cards, answer, plan, error, running, interrupted, query, runId, citationMap, citationsFinal, answerStatus])
+      }, [cards, answer, plan, error, running, interrupted, query, runId, citationMap, citationsFinal, answerStatus, persist])
 
       useEffect(() => {
+        if (!persist) return undefined
         const flush = () => savePanelResults(latestRef.current)
         window.addEventListener('pagehide', flush)
         return () => {
           window.removeEventListener('pagehide', flush)
           flush()
         }
-      }, [])
+      }, [persist])
 
       const derivedMap = useMemo(() => {
         const map = {}
@@ -1552,11 +1763,12 @@ body[data-ds-dark-theme] .zs-idx, body[data-ds-dark-theme] .zs-arrow { color:var
       const curatedCount = cards.length - extraCount
       return h('div', { style: { display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 } },
         h('div', { className: 'zs-topbar' },
-          h('button', { className: 'zs-back', type: 'button', onClick: onHome, title: '返回首页', 'aria-label': '返回首页' }, h(Icon, { name: 'back', size: 18 })),
+          h('button', { className: 'zs-back', type: 'button', onClick: onBack ?? onHome, title: backLabel, 'aria-label': backLabel }, h(Icon, { name: 'back', size: 18 })),
           h('div', { className: 'zs-box' },
             h(Icon, { name: 'search', size: 15 }),
             h('input', {
               className: 'zs-input', value, onChange: (e) => setValue(e.target.value),
+              placeholder: plugin ? '继续搜索其他问题…' : '',
               onKeyDown: (e) => { if (e.key === 'Enter' && !e.nativeEvent.isComposing) submit() },
             }),
             h('button', { className: 'zs-submit', type: 'button', onClick: submit, 'aria-label': '搜索', disabled: !value.trim() },
@@ -1577,7 +1789,7 @@ body[data-ds-dark-theme] .zs-idx, body[data-ds-dark-theme] .zs-arrow { color:var
         ),
         h('div', { className: 'zs-body' },
           h('div', { className: 'zs-left zs-scroll' },
-            h('h1', { className: 'zs-qtitle' }, query),
+            plugin ? h(PluginCard, { plugin }) : h('h1', { className: 'zs-qtitle' }, query),
             !ready
               ? h('div', { className: 'zs-banner' },
                 h(Icon, { name: 'info', size: 15 }),
@@ -1637,7 +1849,7 @@ body[data-ds-dark-theme] .zs-idx, body[data-ds-dark-theme] .zs-arrow { color:var
                   }, h('b', null, String(gi + 1).padStart(2, '0')), group.label || group.question)))
                   : null)
               : h('div', { className: 'zs-rhead' },
-                h('h3', null, '引用证据'),
+                h('h3', null, plugin ? '社区评价' : '引用证据'),
                 h('span', null, cards.length ? `知乎 ${zCount} · 全网 ${wCount}` : running ? (plan ? 'AI 正在按视角筛选…' : '正在检索…') : '')),
             cards.length
               ? groups.map((group, gi) => h('section', {
@@ -1662,8 +1874,8 @@ body[data-ds-dark-theme] .zs-idx, body[data-ds-dark-theme] .zs-arrow { color:var
                   columns.map((_, ci) => h('div', { className: 'zs-col', key: ci }, [0, 1, 2].map((i) => h(GhostCard, { key: i, i: i + ci * 0.5 })))))
                 : h('div', { className: 'zs-state' },
                   h('span', { className: 'zs-state-ico' }, h(Icon, { name: 'quote', size: 20 })),
-                  h('b', null, '没有找到可用的证据'),
-                  '换个说法，或者把问题问得更具体一些。'),
+                  h('b', null, plugin ? '社区里还没有找到直接评价' : '没有找到可用的证据'),
+                  plugin ? '可以先看上面的插件资料，或者换个问法。' : '换个说法，或者把问题问得更具体一些。'),
           ),
         ),
       )
@@ -1752,13 +1964,58 @@ body[data-ds-dark-theme] .zs-idx, body[data-ds-dark-theme] .zs-arrow { color:var
             }, '清空'))),
           section('关于',
             h('div', { className: 'zs-set-about' },
-              h('b', null, 'dsh-zsearch 0.2.0'),
+              h('b', null, 'dsh-zsearch 0.3.0'),
               h('span', null, '知乎 + 全网检索，左答右证。'),
               h('span', null, '设置只保存在本机 origin，不包含任何凭据。'))),
         ),
         h('div', { className: 'zs-set-foot' },
           h('button', { className: 'zs-set-reset', type: 'button', onClick: onResetSettings }, '恢复默认'),
           h('span', null, '设置 v1')))
+    }
+
+    function PluginsPage({ items = [], loading = false, error = null, updatedAt = null, onBack, onOpen, onRetry }) {
+      const [filter, setFilter] = useState('')
+      const list = useMemo(() => {
+        const q = filter.trim().toLowerCase()
+        if (!q) return items
+        return items.filter((item) =>
+          String(item.name ?? '').toLowerCase().includes(q) ||
+          String(item.category ?? '').toLowerCase().includes(q) ||
+          String(item.desc ?? '').toLowerCase().includes(q))
+      }, [items, filter])
+
+      return h('div', { className: 'zs-plugins zs-scroll' },
+        h('div', { className: 'zs-plugins-head' },
+          h('button', { className: 'zs-back', type: 'button', onClick: onBack, title: '返回搜索', 'aria-label': '返回搜索' }, h(Icon, { name: 'back', size: 18 })),
+          h('div', { className: 'zs-plugins-headtext' },
+            h('h1', { className: 'zs-plugins-title' }, '热门插件'),
+            h('p', { className: 'zs-plugins-sub' }, '按 GitHub Star 排序 · 点开看 AI 评价与社区讨论'))),
+        h('label', { className: 'zs-plugins-search' },
+          h(Icon, { name: 'search', size: 15 }),
+          h('input', {
+            value: filter, onChange: (event) => setFilter(event.target.value),
+            placeholder: '搜索插件名 / 分类 / 关键词', 'aria-label': '搜索插件',
+          })),
+        loading
+          ? h('div', { className: 'zs-plugins-state' }, h('span', { className: 'zs-spin' }), '正在载入插件目录…')
+          : error
+            ? h('div', { className: 'zs-plugins-state' },
+              h('b', null, '插件目录加载失败'),
+              h('span', null, error),
+              h('button', { className: 'zs-install-btn primary', type: 'button', onClick: onRetry }, '重试'))
+            : h('div', { className: 'zs-plugin-grid' }, list.map((item) => h('button', {
+              key: item.id, className: 'zs-plugin-tile', type: 'button', onClick: () => onOpen(item),
+            },
+              h('div', { className: 'zs-plugin-tile-top' },
+                h('span', { className: 'zs-plugin-tile-name' }, item.name),
+                h('span', { className: 'zs-plugin-tag' }, item.category || '未分类')),
+              h('div', { className: 'zs-plugin-tile-desc' }, item.desc || '暂无简介'),
+              h('div', { className: 'zs-plugin-tile-stats' },
+                h('span', null, `★ ${fmtCount(item.stars)}`),
+                h('span', null, `↓ ${fmtCount(item.downloads)}/月`))))),
+        h('p', { className: 'zs-plugins-note' },
+          `目录整理于 ${updatedAt || '2026-11-04'}，为当时快照；安装前请确认插件来源。`),
+      )
     }
 
     function App() {
@@ -1776,6 +2033,10 @@ body[data-ds-dark-theme] .zs-idx, body[data-ds-dark-theme] .zs-arrow { color:var
       const [view, setView] = useState(initial.view)
       const [query, setQuery] = useState(initial.query)
       const [runId, setRunId] = useState(initial.attempt)
+      const [plugin, setPlugin] = useState(null)
+      const [pluginRun, setPluginRun] = useState(0)
+      const [catalog, setCatalog] = useState(null)
+      const [catalogState, setCatalogState] = useState({ loading: false, error: null })
       const [setup, setSetup] = useState(null)
       const [setupOpen, setSetupOpen] = useState(false)
       const [debugOpen, setDebugOpen] = useState(false)
@@ -1799,10 +2060,39 @@ body[data-ds-dark-theme] .zs-idx, body[data-ds-dark-theme] .zs-arrow { color:var
         setSettingsOpen(false)
         setDebugOpen(false)
         setSetupOpen(false)
+        setPlugin(null)
         setView('home')
         setQuery('')
         setRunId(0)
       }
+
+      const loadCatalog = () => {
+        setCatalogState({ loading: true, error: null })
+        fetch('/zsearch/api/plugins/list')
+          .then((response) => {
+            if (!response.ok) throw new Error(`HTTP ${response.status}`)
+            return response.json()
+          })
+          .then((data) => {
+            setCatalog(data)
+            setCatalogState({ loading: false, error: null })
+          })
+          .catch((error) => setCatalogState({ loading: false, error: String(error?.message ?? error) }))
+      }
+
+      const openPlugins = () => {
+        setSetupOpen(false)
+        setView('plugins')
+        if (!catalog && !catalogState.loading) loadCatalog()
+      }
+
+      const openPlugin = (item) => {
+        setPlugin(item)
+        setPluginRun((value) => value + 1)
+        setView('plugin')
+      }
+
+      const backToPlugins = () => setView('plugins')
 
       useEffect(() => { refreshSetup() }, [])
       useEffect(() => {
@@ -1814,6 +2104,7 @@ body[data-ds-dark-theme] .zs-idx, body[data-ds-dark-theme] .zs-arrow { color:var
       useEffect(() => {
         const applyPending = (pending) => {
           const attempt = beginSearch(pending.text)
+          setPlugin(null)
           setQuery(pending.text)
           setRunId(attempt)
           setSetupOpen(false)
@@ -1830,6 +2121,7 @@ body[data-ds-dark-theme] .zs-idx, body[data-ds-dark-theme] .zs-arrow { color:var
         const value = String(text ?? '').trim()
         if (!value) return
         const attempt = beginSearch(value)
+        setPlugin(null)
         setQuery(value)
         setRunId(attempt)
         setView('results')
@@ -1838,12 +2130,13 @@ body[data-ds-dark-theme] .zs-idx, body[data-ds-dark-theme] .zs-arrow { color:var
       const goHome = () => {
         updatePanel({ view: 'home' })
         setSetupOpen(false)
+        setPlugin(null)
         setView('home')
       }
 
       const theme = prefs.theme === 'dark' ? ' zs-theme-dark' : prefs.theme === 'light' ? ' zs-theme-light' : ''
       return h('div', {
-        className: `zs-root${view === 'results' && !setupOpen ? ' zs-results-on' : ''}${theme}`,
+        className: `zs-root${(view === 'results' || view === 'plugin') && !setupOpen ? ' zs-results-on' : ''}${theme}`,
         'data-size': prefs.fontSize,
         'data-density': prefs.density,
         'data-motion': prefs.motion ? 'on' : 'off',
@@ -1857,7 +2150,32 @@ body[data-ds-dark-theme] .zs-idx, body[data-ds-dark-theme] .zs-arrow { color:var
               query, runId, onSearch: search, onHome: goHome,
               setup, ready, showStats: prefs.showStats, onOpenSetup: () => setSetupOpen(true),
             })
-            : h(Home, { onSearch: search, setup, ready, onOpenSetup: () => setSetupOpen(true) }),
+            : view === 'plugins'
+              ? h(PluginsPage, {
+                items: catalog?.items ?? [],
+                loading: catalogState.loading,
+                error: catalogState.error,
+                updatedAt: catalog?.updatedAt,
+                onBack: goHome,
+                onOpen: openPlugin,
+                onRetry: loadCatalog,
+              })
+              : view === 'plugin' && plugin
+                ? h(Results, {
+                  key: `plugin-${plugin.id}-${pluginRun}`,
+                  query: `如何评价 DSH 插件「${plugin.name}」？`,
+                  runId: pluginRun,
+                  plugin,
+                  pluginId: plugin.id,
+                  persist: false,
+                  onSearch: search,
+                  onHome: goHome,
+                  onBack: backToPlugins,
+                  backLabel: '返回热门插件',
+                  setup, ready, showStats: prefs.showStats,
+                  onOpenSetup: () => setSetupOpen(true),
+                })
+                : h(Home, { onSearch: search, setup, ready, onOpenSetup: () => setSetupOpen(true), onOpenPlugins: openPlugins }),
         h('div', { className: 'zs-corner' },
           debugEnabled && prefs.showDebug
             ? h('div', { className: 'zs-debug-wrap' },

@@ -111,7 +111,7 @@ function makeLlm(calls, behavior = {}) {
           }
           return
         }
-        if (system.includes('ZSearch 的回答编辑')) {
+        if (system.includes('ZSearch 的回答编辑') || system.includes('ZSearch 的插件评测编辑')) {
           calls.answer += 1
           calls.answerEffort = options.reasoningEffort
           calls.answerMaxTokens = options.maxTokens
@@ -167,12 +167,13 @@ function makeLlm(calls, behavior = {}) {
   }
 }
 
-function makeCtx(llm) {
+function makeCtx(llm, manager) {
   const state = { registered: null }
   const ctx = {
     get(name) {
       if (name === 'llm') return llm
       if (name === 'agentDefaultModel') return { currentSelection: () => ({ provider: 'mock', model: 'mock' }) }
+      if (name === 'pluginManager') return manager
       return undefined
     },
     effect(fn) { fn() },
@@ -244,6 +245,26 @@ function runJson(handler, url) {
   })
 }
 
+function runPost(handler, url, payload) {
+  return new Promise((resolve, reject) => {
+    let body = ''
+    const res = {
+      writeHead() {},
+      write(chunk) { body += String(chunk) },
+      end(chunk) {
+        if (chunk !== undefined) body += String(chunk)
+        try { resolve(JSON.parse(body)) } catch (error) { reject(error) }
+      },
+    }
+    const chunks = [Buffer.from(JSON.stringify(payload ?? {}))]
+    const req = {
+      url, method: 'POST', socket: { remoteAddress: '127.0.0.1' },
+      async *[Symbol.asyncIterator]() { for (const chunk of chunks) yield chunk },
+    }
+    handler(req, res).catch(reject)
+  })
+}
+
 function byName(events, name) {
   return events.filter((event) => event.name === name).map((event) => event.data)
 }
@@ -260,7 +281,15 @@ async function main() {
 
   const calls = { expand: 0, curate: 0, answer: 0, backfill: 0 }
   const llm = makeLlm(calls)
-  const { ctx, state } = makeCtx(llm)
+  const installs = []
+  const manager = {
+    inspect: async (spec) => ({ status: 'accepted', name: spec, version: '0.1.0' }),
+    installBundle: async (spec, options) => {
+      installs.push({ spec, options })
+      return { application: 'applied', changed: true, stage: 'enable', target: 'mock', version: '0.1.0', bundle: 'mock', pendingBuilds: [], warnings: [] }
+    },
+  }
+  const { ctx, state } = makeCtx(llm, manager)
   apply(ctx, { cliPath: cli, cacheMinutes: 10, debug: false })
   assert.ok(state.registered, 'webServer.register was called')
   const handler = state.registered.handler
@@ -442,6 +471,32 @@ async function main() {
   assert.ok(cards(fourth.events).length >= 8, 'heuristic cards survive curation failure')
   assert.ok(byName(fourth.events, 'done').length === 1)
   assert.ok(byName(fourth.events, 'answer').length > 0)
+
+  // Plugin topic: catalog, install inspection, install, and the plugin search mode.
+  const pluginCatalog = await runJson(handler, '/zsearch/api/plugins/list')
+  assert.equal(pluginCatalog.count, 60)
+  assert.equal(pluginCatalog.items.length, 60)
+  assert.ok(pluginCatalog.items[0].stars >= pluginCatalog.items[1].stars, 'catalog is sorted by stars')
+  const targetPlugin = pluginCatalog.items[0]
+  const inspected = await runJson(handler, `/zsearch/api/plugins/install/inspect?pluginId=${encodeURIComponent(targetPlugin.id)}`)
+  assert.equal(inspected.ok, true)
+  assert.equal(inspected.result.name, targetPlugin.npm)
+  const installed = await runPost(handler, '/zsearch/api/plugins/install', { pluginId: targetPlugin.id })
+  assert.equal(installed.ok, true)
+  assert.equal(installs.length, 1)
+  assert.equal(installs[0].spec, targetPlugin.npm)
+
+  const pluginCalls = { expand: 0, curate: 0, answer: 0, backfill: 0 }
+  const pluginCtx = makeCtx(makeLlm(pluginCalls), manager)
+  apply(pluginCtx.ctx, { cliPath: cli, cacheMinutes: 10, debug: false })
+  const pluginRun = await runSse(pluginCtx.state.registered.handler, `/zsearch/api/stream?mode=plugin&pluginId=${encodeURIComponent(targetPlugin.id)}`)
+  assert.equal(pluginRun.status, 200)
+  const pluginQuery = byName(pluginRun.events, 'query')[0].query
+  assert.match(pluginQuery, /如何评价 DSH 插件「/)
+  assert.match(pluginQuery, new RegExp(targetPlugin.name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')))
+  assert.ok(byName(pluginRun.events, 'plan')[0], 'plugin plan event')
+  assert.ok(pluginCalls.curate > 0, 'plugin curation prompt ran')
+  assert.ok(pluginCalls.answer > 0, 'plugin answer prompt ran')
 
   console.log('server integration ok')
   console.log(`  calls: expand=${calls.expand} curate=${calls.curate} answer=${calls.answer} backfill=${calls.backfill}`)

@@ -6,7 +6,7 @@
 
 **智能搜索插件 · 知乎 + 全网 · 左答右证**
 
-版本 **0.2.0** · Apache-2.0 · 适用于 DSH `>=0.2.2-rc.1 <0.3.0`
+版本 **0.3.0** · Apache-2.0 · 适用于 DSH `>=0.2.2-rc.1 <0.3.0`
 GitHub 已公开，npm 包尚未发布（当前请从源码安装）。
 
 ![ZSearch 首页](https://raw.githubusercontent.com/hAcKlyc/dsh-zsearch/main/docs/home.png)
@@ -54,11 +54,22 @@ GitHub 已公开，npm 包尚未发布（当前请从源码安装）。
 
 ![ZSearch 结果页](https://raw.githubusercontent.com/hAcKlyc/dsh-zsearch/main/docs/topbar-fixed.png)
 
+## 专题：热门插件
+
+ZSearch 不只是一个通用搜索框。首页输入框下方的「热门插件」专题，把 DSH 社区插件整理成一张可浏览的列表：
+
+- **按 GitHub Star 排序的 60 个插件**：卡片展示名称、分类、简介、Star 和月下载量。
+- **点开就是评测**：左上角是插件卡（仓库、安装命令、一键安装），左边是 AI 评价，右边是社区评价。
+- **不是通用搜索换个皮**：插件模式会把插件名、仓库、分类和简介作为检索上下文，回答按“值不值得装、优点、局限、替代方案、安装注意”组织，结论仍然带角标。
+
+目录整理于 2026-11-04，是当时快照；安装的是第三方代码，确认前请核对来源。
+
 ## 典型场景
 
 | 场景 | 你会问 | ZSearch 给你 |
 |---|---|---|
 | **技术选型** | 「这个 DSH 插件怎么装？值不值得装？」 | 官方说明 + 知乎真实使用体验 + 踩坑记录 |
+| **插件选型** | 「这个插件适合我吗？有没有替代？」 | 插件卡 + AI 评价 + 社区真实反馈 |
 | **新工具/新产品** | 「某某模型和某某工具怎么选？」 | 官方参数、社区评价、实际成本与限制 |
 | **报错与踩坑** | 「这个错误有没有人遇到过？」 | issue、博客、知乎回答里的解决路径 |
 | **热点事件** | 「这件事现在大家怎么看？」 | 全网报道 + 知乎社区的不同立场 |
@@ -135,6 +146,8 @@ Secret 不会写入仓库、日志或对话记录；钥匙串不可用时回退�
 - 同 query 并发不合并；没有分阶段的 token 统计，只有总数与诊断环。
 - 回答被 provider 中断或超时时会显示「回答生成中断」，保留已生成部分，不自动续写。
 - 检索结果取决于 `zhihu-cli` 当时能返回的内容，不保证实时覆盖每一条新讨论。
+- 插件专题目录是 2026-11-04 的快照，Star/下载量不是实时排名；插件评价每次打开都重新生成，不跨刷新保存。
+- 安装按钮会把第三方代码装进当前 Profile，确认前请核对来源；安装完成后通常需要重启 DSH。
 
 ---
 
@@ -153,6 +166,7 @@ Secret 不会写入仓库、日志或对话记录；钥匙串不可用时回退�
 ```
 
 - 模型 ②（筛选）和模型 ③（回答）**并行**，回答不用等右栏整理完。
+- 插件模式只替换检索上下文和筛选/回答 prompt，仍走同一条扩词 → 检索 → 并行筛选/回答管线。
 - 回答按候选编号引用，服务端通过 `citations` 事件映射到显示序号。
 - 冷启动通常 3 次模型调用；出现缺失引用时 +1 次补卡。10 分钟缓存命中时只重跑回答。
 - Host 通过 SSE 把 `plan`、`card`、`answer`、`topic`、`citations`、`done` 等事件推给页面。
@@ -162,7 +176,10 @@ Secret 不会写入仓库、日志或对话记录；钥匙串不可用时回退�
 
 | 路由 | 用途 |
 |---|---|
-| `GET /zsearch/api/stream?q=` | SSE 检索与回答 |
+| `GET /zsearch/api/plugins/list` | 热门插件目录（按 Star 排序） |
+| `GET /zsearch/api/plugins/install/inspect` | 安装前检查插件来源 |
+| `POST /zsearch/api/plugins/install` | 经 DSH Plugin Manager 安装 |
+| `GET /zsearch/api/stream?q=` | SSE 检索与回答；插件模式追加 `mode=plugin&pluginId=` |
 | `GET /zsearch/api/setup/status` | CLI / Secret / Skill 状态 |
 | `GET /zsearch/api/setup/install` | 安装知乎 CLI 和 Skill |
 | `POST /zsearch/api/setup/secret` | 写入 Access Secret |
@@ -192,9 +209,10 @@ node test/client-render.mjs
 ### 目录
 
 ```text
-index.js            Host 半：检索、模型调用、SSE、安装引导
-client.js           Client 半：面板、结果页、Markdown 渲染
+index.js            Host 半：检索、模型调用、SSE、安装引导、插件目录/安装
+client.js           Client 半：面板、结果页、插件专题、Markdown 渲染
 cordis.patch.yml    bundle patch
+data/plugins.json   热门插件目录快照（60 条，按 Star 排序）
 locale/             插件标题、描述、详情页入口
 icon.svg            插件图标
 docs/DETAIL.md      插件详情页文档

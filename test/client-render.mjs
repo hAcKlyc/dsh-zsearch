@@ -125,9 +125,9 @@ sandbox.globalThis = sandbox
 const source = readFileSync(new URL('../client.js', import.meta.url), 'utf8')
   .replace(
     "    return {\n      inject: ['slots'],",
-    "    return {\n      __test: { renderInline, renderAnswer, elementChildren, renumberCitations, Results, Home, App, SettingsPanel, Setup },\n      inject: ['slots'],",
+    "    return {\n      __test: { renderInline, renderAnswer, elementChildren, renumberCitations, Results, Home, App, SettingsPanel, Setup, PluginsPage, PluginCard },\n      inject: ['slots'],",
   )
-assert.match(source, /__test: \{ renderInline, renderAnswer, elementChildren, renumberCitations, Results, Home, App, SettingsPanel, Setup \}/, 'test export injected')
+assert.match(source, /__test: \{ renderInline, renderAnswer, elementChildren, renumberCitations, Results, Home, App, SettingsPanel, Setup, PluginsPage, PluginCard \}/, 'test export injected')
 
 vm.createContext(sandbox)
 vm.runInNewContext(source, sandbox, { filename: 'client.js' })
@@ -207,6 +207,50 @@ assert.ok(!home.includes('.zs-brandrow'), 'home has no logo row')
 assert.ok(!home.includes('.zs-foot'), 'home has no footer')
 assert.ok(!home.includes('.zs-srcpill'), 'home has no source pills')
 assert.ok(!home.includes('.zs-tools'), 'home has no tools row')
+assert.ok(home.some((text) => text.includes('.zs-topic-entry')), 'home exposes the plugin topic')
+
+// Plugin topic list and detail card render with the catalog shape.
+const { PluginsPage, PluginCard } = api.__test
+slots.length = 0
+component = PluginsPage
+props = {
+  items: [
+    { id: 'a', name: 'alpha', category: '工具', desc: '第一个插件', stars: 1200, downloads: 3400 },
+    { id: 'b', name: 'beta', category: '主题', desc: '第二个插件', stars: 300, downloads: 200 },
+  ],
+  loading: false, error: null, updatedAt: '2026-11-04',
+  onBack() {}, onOpen() {}, onRetry() {},
+}
+schedule()
+const pluginsPage = scan()
+assert.ok(pluginsPage.some((text) => text.includes('.zs-plugin-grid')), 'plugin grid renders')
+assert.ok(pluginsPage.includes('alpha'), 'plugin name renders')
+assert.ok(pluginsPage.includes('热门插件'), 'plugin topic title renders')
+
+slots.length = 0
+component = PluginCard
+props = {
+  plugin: { id: 'a', name: 'alpha', category: '工具', desc: '第一个插件', stars: 1200, downloads: 3400, npm: 'alpha', install: 'dsh plugin add alpha' },
+}
+schedule()
+const pluginCard = scan()
+assert.ok(pluginCard.some((text) => text.includes('.zs-plugin-card')), 'plugin detail card renders')
+assert.ok(pluginCard.includes('alpha'), 'plugin detail name renders')
+assert.ok(pluginCard.some((text) => text.includes('安装到当前 Profile')), 'plugin install action renders')
+// Plugin detail reuses Results but opens the plugin-mode stream and renders the card.
+slots.length = 0
+component = api.__test.Results
+props = {
+  query: '如何评价 DSH 插件「alpha」？', runId: 7, pluginId: 'a', persist: false,
+  plugin: { id: 'a', name: 'alpha', category: '工具', desc: '第一个插件', stars: 1200, downloads: 3400, npm: 'alpha', install: 'dsh plugin add alpha' },
+  onSearch() {}, onHome() {}, onBack() {}, setup: null, ready: true, onOpenSetup() {},
+}
+schedule()
+const pluginStream = FakeEventSource.instances.at(-1)
+assert.ok(pluginStream.url.includes('mode=plugin'), 'plugin detail uses plugin mode')
+assert.ok(pluginStream.url.includes('pluginId=a'), 'plugin detail sends plugin id')
+const detail = scan()
+assert.ok(detail.some((text) => text.includes('.zs-body')), 'plugin detail reuses the results body')
 
 // Full Markdown: fenced code, table, nested list, task list, image, raw HTML escaping.
 const { renderAnswer, elementChildren } = api.__test

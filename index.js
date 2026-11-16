@@ -1,5 +1,5 @@
 import { execFile, spawn } from 'node:child_process'
-import { createHash } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -18,7 +18,47 @@ const AVATAR_UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/5
 let manifestCache = { at: 0, value: null }
 const searchCache = new Map()
 const avatarCache = new Map()
+const PLUGIN_CATALOG = (() => {
+  try {
+    const data = JSON.parse(readFileSync(new URL('./data/plugins.json', import.meta.url), 'utf8'))
+    const items = Array.isArray(data?.items) ? data.items : []
+    return {
+      updatedAt: typeof data?.updatedAt === 'string' ? data.updatedAt : null,
+      items,
+      byId: new Map(items.map((item) => [item.id, item])),
+    }
+  } catch {
+    return { updatedAt: null, items: [], byId: new Map() }
+  }
+})()
 let secretMode = 'unknown'
+
+function pluginSpec(plugin) {
+  if (plugin?.npm) return plugin.npm
+  if (!plugin?.repo) return null
+  const slug = String(plugin.repo)
+    .replace(/^https?:\/\/github\.com\//i, '')
+    .replace(/\.git$/i, '')
+    .replace(/\/+$/, '')
+  return slug && slug.split('/').length >= 2 ? `github:${slug}` : null
+}
+
+function pluginQuery(plugin) {
+  return `如何评价 DSH 插件「${plugin.name}」？它的真实体验、优缺点和适用场景`
+}
+
+function pluginContext(plugin) {
+  const lines = [
+    `插件：${plugin.name}`,
+    `分类：${plugin.category ?? '未分类'}`,
+    `npm：${plugin.npm ?? '未收录'}`,
+    `仓库：${plugin.repo ?? '未收录'}`,
+    `官方简介：${plugin.desc || '无'}`,
+    `安装命令：${plugin.install ?? '未收录'}`,
+    `目录快照：${PLUGIN_CATALOG.updatedAt ?? '未知'}`,
+  ]
+  return lines.join('\n')
+}
 
 function sendJson(res, status, body) {
   const text = JSON.stringify(body)
@@ -457,20 +497,38 @@ const ANSWER_SYSTEM = [
   '- 资料冲突时说明各自口径与理由；资料不足时说清能回答哪部分、缺哪部分。数字写清对象、单位、时间和口径，区分关系示意与实测数据。',
 ].join('\n')
 
-function answerPrompt(query, candidates) {
-  if (!candidates.length) return `问题：${query}\n\n证据：（没有检索到可用证据）`
+const PLUGIN_ANSWER_SYSTEM = [
+  '你是 ZSearch 的插件评测编辑，基于插件资料和「知乎 + 全网」的编号证据，写一份能帮用户决定“装不装”的评测。',
+  '',
+  '【结构】',
+  '- 全文用标准 Markdown。先用一句话给判断：值不值得装、最适合谁；不要复述问题。',
+  '- 用 2–4 个有判断的小标题，优先覆盖：它解决什么问题、真实体验与优点、局限/风险/踩坑、替代方案或怎么选、安装注意。',
+  '- 没有证据支撑的维度不要硬写；官方简介只能当背景，不能当成社区评价。',
+  '- 正文通常 400–900 字；短评可以说完即止。不用 emoji，不写“总之”“综上所述”式收尾。',
+  '',
+  '【引用】',
+  '- 每个事实性判断句末用 [n] 标注来源，多个来源写 [1][3]；n 是证据列表里的候选编号，只能引用列出的编号。',
+  '- 角标放在句末标点之前；不要写“根据资料 1”“证据显示”。',
+  '- 只使用证据和插件资料中的信息；不补造功能、价格、作者背景或用户评价。证据不足时直接说“社区讨论不足/资料未覆盖”。',
+  '- 区分官方声明、目录快照数据和用户反馈；下载量/star 是目录快照，引用时说明是快照，不当成实时排名。',
+  '- 资料冲突时说明各自口径与理由。',
+].join('\n')
+
+function answerPrompt(query, candidates, context = '') {
+  const head = context ? ['插件资料：', context, ''] : []
+  if (!candidates.length) return [...head, `问题：${query}`, '', '证据：（没有检索到可用证据）'].join('\n')
   const evidence = candidates.map((item) => {
     const meta = item.source === 'web'
       ? `全网·${item.host}`
       : `知乎·${item.author}${item.type ? `·${item.type}` : ''}${item.votes ? `·${item.votes} 赞` : ''}`
     return `[${item.candidateId}] ${meta}｜${item.title}\n正文：${item.text}`
   })
-  return `问题：${query}\n\n证据（共 ${candidates.length} 条，编号即候选编号）：\n${evidence.join('\n\n')}`
+  return [...head, `问题：${query}`, '', `证据（共 ${candidates.length} 条，编号即候选编号）：`, evidence.join('\n\n')].join('\n')
 }
 
 const ANSWER_TOTAL_TIMEOUT_MS = 180_000
 
-async function* streamAnswer(ctx, query, candidates, maxTokens = 8000) {
+async function* streamAnswer(ctx, query, candidates, maxTokens = 8000, context = '') {
   const llm = ctx.get('llm')
   const modelService = ctx.get('agentDefaultModel')
   const unavailable = {
@@ -508,8 +566,8 @@ async function* streamAnswer(ctx, query, candidates, maxTokens = 8000) {
       reasoningEffort: 'off',
       maxTokens,
       signal: controller.signal,
-      system: ANSWER_SYSTEM,
-      messages: [{ role: 'user', content: [{ type: 'text', text: answerPrompt(query, candidates) }] }],
+      system: context ? PLUGIN_ANSWER_SYSTEM : ANSWER_SYSTEM,
+      messages: [{ role: 'user', content: [{ type: 'text', text: answerPrompt(query, candidates, context) }] }],
     })
     for await (const chunk of stream) {
       if (chunk?.type === 'text-delta' && chunk.text) {
@@ -543,10 +601,10 @@ const EXPAND_SYSTEM = [
   '其中至少一条用英文（便于检索 GitHub、官方文档和英文博客）。',
 ].join('\n')
 
-async function expandQueries(ctx, query) {
+async function expandQueries(ctx, query, context = '') {
   const text = await streamText(ctx, {
     system: EXPAND_SYSTEM,
-    prompt: `问题：${query}`,
+    prompt: context ? `插件背景：\n${context}\n\n问题：${query}` : `问题：${query}`,
     maxTokens: 300,
     timeoutMs: 30_000,
     reasoningEffort: 'off',
@@ -612,14 +670,39 @@ const CURATE_SYSTEM = [
   '10|插件升级后如果面板消失，先重启 DSH；仍然没有就回滚到上一版。',
 ].join('\n')
 
-function curationPrompt(query, candidates) {
+const PLUGIN_CURATE_SYSTEM = [
+  '你是「知乎 × 全网」检索结果的编辑，这次面对的是一个 DSH 插件。把候选里真正能帮用户判断“装不装”的内容挑出来，按评价视角分组。',
+  '优先考虑这些视角：真实体验与优点、局限/风险/踩坑、替代方案、适合谁、安装注意。没有证据的视角不要硬编，也不要为了凑组把不相关的句子塞进来。',
+  '官方简介和安装命令只能当背景，不能当成社区评价；组问题和摘句都必须来自候选原文。',
+  '',
+  '【每组选什么】',
+  '- 组问题要像用户会问的一句话，例如“装过的人觉得值吗？”“最容易踩的坑是什么？”“同类插件怎么选？”',
+  '- 每条摘 1-2 句逐字原文，必须能直接回答该组问题；同话题但只是背景的句子不要放。',
+  '- 摘不到 2 条好句的视角就删掉；宁少勿杂。',
+  '',
+  '【数量与摘录】',
+  '- 2-5 组，每组 2-6 条；组按对“要不要装”的重要性排序。',
+  '- 原文从候选正文逐字复制，不改写、不概括、不拼接；20-100 字，编号照抄候选的 # 编号。',
+  '- 同一个候选只能出现一次。',
+  '',
+  '【输出格式】只输出下面这些行，第一行就是数据，不要解释、标题或空行：',
+  '主题|这个插件值不值得装？',
+  '组|2-4字短标签|这一组的问题，6-18 字，以问号结尾',
+  '编号|原文',
+  '编号|原文',
+  '组|短标签|问题',
+  '编号|原文',
+].join('\n')
+
+function curationPrompt(query, candidates, context = '') {
   const lines = candidates.map((item, index) => {
     const meta = item.source === 'web'
       ? `全网·${item.host}`
       : `知乎·${item.type}${item.votes ? `·${item.votes} 赞` : ''}${item.authorTag ? `·${item.authorTag}` : ''}`
     return `#${item.candidateId} [${meta}] ${item.title}\n${item.text}`
   })
-  return [`用户问题：${query}`, '', `候选（共 ${candidates.length} 条）：`, '', ...lines.join('\n\n').split('\n')].join('\n')
+  const head = context ? ['插件资料：', context, ''] : []
+  return [...head, `用户问题：${query}`, '', `候选（共 ${candidates.length} 条）：`, '', ...lines.join('\n\n').split('\n')].join('\n')
 }
 
 function locateCandidate(items, quote) {
@@ -847,15 +930,15 @@ export function apply(ctx, config = {}) {
     }
   }
 
-  const retrieve = async (query, force) => {
-    const key = query.trim().toLowerCase()
+  const retrieve = async (query, force, context = '', pluginId = null) => {
+    const key = `${pluginId ? `plugin:${pluginId}:` : ''}${query.trim().toLowerCase()}`
     const cached = searchCache.get(key)
     if (!force && cached && Date.now() - cached.at < ttlMs && Array.isArray(cached.value?.candidates)) {
       return { value: cached.value, cached: true, key }
     }
     const binary = await getCli()
     if (!binary) return { error: '未检测到 zhihu-cli，请先在引导页安装', key, cached: false }
-    const variants = await expandQueries(ctx, query)
+    const variants = await expandQueries(ctx, query, context)
     const queries = [...new Set([query, ...variants])].slice(0, 5)
     const [zhihuRaw, webRaw] = await Promise.all([
       collectZhihu(binary, queries),
@@ -881,11 +964,11 @@ export function apply(ctx, config = {}) {
     }
   }
 
-  const curate = async (query, candidates) => {
+  const curate = async (query, candidates, context = '') => {
     if (!candidates.length) return { cards: [], topic: '', source: 'empty' }
     const text = await streamText(ctx, {
-      system: CURATE_SYSTEM,
-      prompt: curationPrompt(query, candidates),
+      system: context ? PLUGIN_CURATE_SYSTEM : CURATE_SYSTEM,
+      prompt: curationPrompt(query, candidates, context),
       maxTokens: 8000,
       timeoutMs: 120_000,
       reasoningEffort: 'off',
@@ -907,8 +990,93 @@ export function apply(ctx, config = {}) {
         return
       }
       const url = new URL(req.url ?? '/', 'http://localhost')
+      if (url.pathname === '/zsearch/api/plugins/list') {
+        sendJson(res, 200, {
+          items: PLUGIN_CATALOG.items,
+          count: PLUGIN_CATALOG.items.length,
+          updatedAt: PLUGIN_CATALOG.updatedAt,
+        })
+        return
+      }
+      if (url.pathname === '/zsearch/api/plugins/install/inspect') {
+        const pluginId = (url.searchParams.get('pluginId') ?? '').trim()
+        const plugin = PLUGIN_CATALOG.byId.get(pluginId)
+        if (!plugin) {
+          sendJson(res, 404, { ok: false, code: 'PLUGIN_NOT_FOUND' })
+          return
+        }
+        const spec = pluginSpec(plugin)
+        if (!spec) {
+          sendJson(res, 400, { ok: false, code: 'MISSING_SPEC' })
+          return
+        }
+        const manager = ctx.get('pluginManager')
+        if (!manager) {
+          sendJson(res, 409, { ok: false, code: 'MANAGER_UNAVAILABLE', message: '当前 profile 没有插件管理器' })
+          return
+        }
+        try {
+          const result = await manager.inspect(spec, {})
+          sendJson(res, 200, { ok: result.status === 'accepted', result })
+        } catch (error) {
+          sendJson(res, 500, { ok: false, code: 'INSPECT_FAILED', message: String(error?.message ?? error) })
+        }
+        return
+      }
+      if (url.pathname === '/zsearch/api/plugins/install' && req.method === 'POST') {
+        const chunks = []
+        for await (const chunk of req) chunks.push(chunk)
+        let body = {}
+        try { body = JSON.parse(Buffer.concat(chunks).toString('utf8')) } catch { body = {} }
+        const plugin = PLUGIN_CATALOG.byId.get(String(body.pluginId ?? '').trim())
+        if (!plugin) {
+          sendJson(res, 404, { ok: false, code: 'PLUGIN_NOT_FOUND' })
+          return
+        }
+        const spec = pluginSpec(plugin)
+        if (!spec) {
+          sendJson(res, 400, { ok: false, code: 'MISSING_SPEC' })
+          return
+        }
+        const manager = ctx.get('pluginManager')
+        if (!manager) {
+          sendJson(res, 409, { ok: false, code: 'MANAGER_UNAVAILABLE', message: '当前 profile 没有插件管理器' })
+          return
+        }
+        const approvedBuilds = Array.isArray(body.approvedBuilds)
+          ? body.approvedBuilds.filter((item) => typeof item === 'string')
+          : undefined
+        try {
+          const result = await manager.installBundle(spec, { requestId: randomUUID(), enabled: true, approvedBuilds })
+          sendJson(res, 200, {
+            ok: result.application === 'applied' || result.application === 'restart-required',
+            changed: result.changed,
+            application: result.application,
+            stage: result.stage,
+            target: result.target,
+            version: result.version ?? null,
+            bundle: result.bundle ?? null,
+            pendingBuilds: result.pendingBuilds ?? [],
+            warnings: result.warnings ?? [],
+            error: result.error ?? null,
+            restartReason: result.restartReason ?? null,
+          })
+        } catch (error) {
+          sendJson(res, 500, { ok: false, code: 'INSTALL_FAILED', message: String(error?.message ?? error) })
+        }
+        return
+      }
       if (url.pathname === '/zsearch/api/stream') {
-        const query = (url.searchParams.get('q') ?? '').trim()
+        const mode = url.searchParams.get('mode') === 'plugin' ? 'plugin' : 'search'
+        const pluginId = (url.searchParams.get('pluginId') ?? '').trim()
+        const plugin = mode === 'plugin' ? PLUGIN_CATALOG.byId.get(pluginId) : null
+        if (mode === 'plugin' && !plugin) {
+          sendJson(res, 404, { error: 'plugin_not_found', pluginId })
+          return
+        }
+        const requested = (url.searchParams.get('q') ?? '').trim()
+        const query = plugin ? pluginQuery(plugin) : requested
+        const context = plugin ? pluginContext(plugin) : ''
         if (!query) {
           sendJson(res, 400, { error: 'missing_query' })
           return
@@ -932,7 +1100,7 @@ export function apply(ctx, config = {}) {
           let backfillMs = null
           send('query', { query })
           const retrieveStartedAt = Date.now()
-          const result = await retrieve(query, url.searchParams.get('refresh') === '1')
+          const result = await retrieve(query, url.searchParams.get('refresh') === '1', context, plugin?.id ?? null)
           retrieveMs = Date.now() - retrieveStartedAt
           if (result.error) {
             send('failure', { message: result.error })
@@ -956,7 +1124,7 @@ export function apply(ctx, config = {}) {
               if (result.cached) {
                 curation = { cards: value.cards, topic: value.topic, source: value.source }
               } else {
-                curation = await curate(query, value.candidates)
+                curation = await curate(query, value.candidates, context)
                 remember(result.key, { ...value, ...curation, curated: true })
               }
               curationMs = Date.now() - curationStartedAt
@@ -985,7 +1153,7 @@ export function apply(ctx, config = {}) {
                 let attemptFinish = null
                 let attemptUsage = null
                 try {
-                  for await (const item of streamAnswer(ctx, query, value.candidates, maxTokens)) {
+                  for await (const item of streamAnswer(ctx, query, value.candidates, maxTokens, context)) {
                     if (item.type === 'delta') {
                       if (closed) break
                       if (attemptFirstDeltaAt === null) {

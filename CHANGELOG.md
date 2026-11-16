@@ -3,6 +3,21 @@
 `dsh-zsearch` 的版本变更。版本号只描述插件包本身；`docs/versions.md` 记录它与 DSH、知乎
 Skill、CLI 的当前组合状态。
 
+## 0.3.0 — 2026-11-17
+
+### Added
+
+- **热门插件专题**：首页输入框下方新增专题入口；60 个社区插件按 GitHub Star 排序，卡片展示分类、简介、Star 与月下载。
+- **插件详情**：复用 ZSearch 左答右证布局，左上插件卡 + AI 评价 + 右侧社区评价；插件模式通过 `mode=plugin&pluginId=` 走同一套检索/筛选/回答管线，使用专用 prompt。
+- **一键安装**：经 DSH Plugin Manager 检查并安装到当前 Profile，保留第三方代码警告、安装脚本拦截与重启提示。
+- Host 新增 `/zsearch/api/plugins/list`、`/plugins/install/inspect`、`/plugins/install`。
+- `data/plugins.json`：60 条目录快照，按 Star 排序。
+
+### Changed
+
+- 版本 0.3.0；插件专题的每次详情都重新生成，不写入普通搜索的面板状态。
+- 插件目录为 2026-11-04 快照；旧 `dsh-zmarket` 的功能后续以本专题为准。
+
 ## 0.2.0 — 2026-11-15
 
 ### 2026-11-17 首页精简
