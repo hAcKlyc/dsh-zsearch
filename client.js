@@ -340,8 +340,7 @@ body[data-ds-dark-theme] .zs-root.zs-theme-light {
   background-size:44px 44px;
   -webkit-mask-image:radial-gradient(ellipse 72% 56% at 50% 30%,#000 18%,transparent 76%);
   mask-image:radial-gradient(ellipse 72% 56% at 50% 30%,#000 18%,transparent 76%); }
-.zs-slogan { font-size:30px; font-weight:600; letter-spacing:.32em; text-indent:.32em; color:var(--zs-ink); margin:4px 0 10px; text-align:center; }
-.zs-tagline { font-size:13px; color:var(--zs-ink-3); margin-bottom:30px; letter-spacing:.02em; text-align:center; }
+.zs-slogan { font-size:30px; font-weight:600; letter-spacing:.32em; text-indent:.32em; color:var(--zs-ink); margin:4px 0 44px; text-align:center; }
 .zs-in { animation:zs-rise .6s var(--zs-ease) both; }
 .zs-in.d1 { animation-delay:.06s } .zs-in.d2 { animation-delay:.12s } .zs-in.d3 { animation-delay:.18s } .zs-in.d4 { animation-delay:.24s }
 @keyframes zs-rise { from { opacity:0; transform:translateY(12px) } to { opacity:1; transform:none } }
@@ -1343,7 +1342,6 @@ body[data-ds-dark-theme] .zs-idx, body[data-ds-dark-theme] .zs-arrow { color:var
         h('div', { className: 'zs-dragstrip', 'aria-hidden': true }),
         h('div', { className: 'zs-aura', 'aria-hidden': true }),
         h('div', { className: 'zs-slogan zs-in d1' }, '问知乎，查全网'),
-        h('div', { className: 'zs-tagline zs-in d2' }, '一次检索，左边是 AI 综述，右边是逐字可核的原文证据'),
         setup && !ready
           ? h('div', { className: 'zs-banner zs-in d2' },
             h(Icon, { name: 'info', size: 15 }),
