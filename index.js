@@ -60,6 +60,23 @@ function pluginContext(plugin) {
   return lines.join('\n')
 }
 
+function isTrustedBrowserRequest(req, ctx) {
+  const headers = req?.headers ?? {}
+  const site = String(headers['sec-fetch-site'] ?? '').toLowerCase()
+  if (site && site !== 'same-origin' && site !== 'none') return false
+  const origin = headers.origin
+  if (!origin) return true
+  let expected = ''
+  try { expected = ctx.webServer?.getOrigin?.() ?? '' } catch { expected = '' }
+  if (!expected && headers.host) {
+    let protocol = 'http:'
+    try { protocol = ctx.webServer?.protocol ?? 'http:' } catch { protocol = 'http:' }
+    expected = `${protocol}//${headers.host}`
+  }
+  if (!expected) return false
+  try { return new URL(origin).origin === new URL(expected).origin } catch { return false }
+}
+
 function sendJson(res, status, body) {
   const text = JSON.stringify(body)
   res.writeHead(status, {
@@ -1018,6 +1035,15 @@ export function apply(ctx, config = {}) {
         return
       }
       const url = new URL(req.url ?? '/', 'http://localhost')
+      const sensitive = url.pathname === '/zsearch/api/setup/install'
+        || url.pathname === '/zsearch/api/setup/secret'
+        || url.pathname === '/zsearch/api/plugins/install'
+        || url.pathname === '/zsearch/api/plugins/install/inspect'
+        || url.pathname === '/zsearch/api/stream'
+      if (sensitive && !isTrustedBrowserRequest(req, ctx)) {
+        sendJson(res, 403, { error: 'origin_not_allowed' })
+        return
+      }
       if (url.pathname === '/zsearch/api/plugins/list') {
         sendJson(res, 200, {
           items: PLUGIN_CATALOG.items,

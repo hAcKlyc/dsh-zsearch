@@ -263,7 +263,7 @@ function runJson(handler, url) {
   })
 }
 
-function runPost(handler, url, payload) {
+function runPost(handler, url, payload, headers = {}) {
   return new Promise((resolve, reject) => {
     let body = ''
     const res = {
@@ -276,7 +276,7 @@ function runPost(handler, url, payload) {
     }
     const chunks = [Buffer.from(JSON.stringify(payload ?? {}))]
     const req = {
-      url, method: 'POST', socket: { remoteAddress: '127.0.0.1' },
+      url, method: 'POST', headers, socket: { remoteAddress: '127.0.0.1' },
       async *[Symbol.asyncIterator]() { for (const chunk of chunks) yield chunk },
     }
     handler(req, res).catch(reject)
@@ -503,6 +503,13 @@ async function main() {
   assert.equal(installed.ok, true)
   assert.equal(installs.length, 1)
   assert.equal(installs[0].spec, targetPlugin.npm)
+  const beforeGuard = installs.length
+  const blocked = await runPost(handler, '/zsearch/api/plugins/install', { pluginId: targetPlugin.id }, {
+    'sec-fetch-site': 'cross-site',
+    origin: 'https://evil.example',
+  })
+  assert.equal(blocked.error, 'origin_not_allowed', 'cross-site install is rejected')
+  assert.equal(installs.length, beforeGuard, 'cross-site install does not reach the manager')
 
   const pluginCalls = { expand: 0, curate: 0, answer: 0, backfill: 0 }
   const pluginCtx = makeCtx(makeLlm(pluginCalls), manager)

@@ -135,6 +135,7 @@ Secret 不会写入仓库、日志或对话记录；钥匙串不可用时回退�
 - 检索通过本机 `zhihu-cli` 的 `search zhihu` / `search global` 完成。
 - 回答、筛选和扩词使用 DSH 宿主当前配置的模型；插件本身不保存模型 Key。
 - Host 只监听 `127.0.0.1`；无遥测、无外部上报。
+- Host 对安装、配置、检索等敏感路由做浏览器同源校验；跨站请求会被拒绝。
 - 头像只代理 `zhimg.com` 的 HTTPS 图片，限制 512KB。
 - 面板状态存在当前 Web GUI origin 的 `localStorage`（键 `dsh-zsearch:panel.v1`，schema v2），不包含 Access Secret。
 

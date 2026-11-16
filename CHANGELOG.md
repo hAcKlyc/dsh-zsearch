@@ -13,6 +13,10 @@ Skill、CLI 的当前组合状态。
 - Host 新增 `/zsearch/api/plugins/list`、`/plugins/install/inspect`、`/plugins/install`。
 - `data/plugins.json`：60 条目录快照，按 Star 排序。
 
+### Security
+
+- 安装、配置、插件安装与检索流增加浏览器同源守卫，拒绝 cross-site 请求；未带浏览器安全头的本地 CLI 请求保持可用。
+
 ### Changed
 
 - 右侧插件评测改为 JSON `groups` 分组契约，避免模型输出格式不匹配导致卡片扁平；无分组时回退到“其他评价”。
