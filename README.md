@@ -7,7 +7,7 @@
 **智能搜索插件 · 知乎 + 全网 · 左答右证**
 
 版本 **0.3.0** · Apache-2.0 · 适用于 DSH `>=0.2.2-rc.1 <0.3.0`
-GitHub 已公开，npm 包尚未发布（当前请从源码安装）。
+GitHub 已公开（Release **v0.3.0**）；npm 包尚未发布，可从 Release tarball 或源码安装。
 
 ![ZSearch 首页](https://raw.githubusercontent.com/hAcKlyc/dsh-zsearch/main/docs/home.png)
 
@@ -79,9 +79,21 @@ ZSearch 不只是一个通用搜索框。首页输入框下方的「热门插件
 
 ## 安装
 
-当前 npm 包尚未发布，推荐从源码安装。
+当前 npm 包尚未发布。推荐从 GitHub Release 下载 tarball，或从源码安装。
 
-### 桌面端
+### 从 Release 安装（推荐）
+
+1. 下载 [dsh-zsearch-0.3.0.tgz](https://github.com/hAcKlyc/dsh-zsearch/releases/download/v0.3.0/dsh-zsearch-0.3.0.tgz)。
+2. 桌面端：**Plugins → Add plugin**，选择该 tarball。
+3. 安装后重启 DSH（Host 代码在启动时加载）。
+
+CLI：
+
+```sh
+dsh plugin --profile <profile> add ./dsh-zsearch-0.3.0.tgz
+```
+
+### 从源码安装
 
 1. 克隆仓库：
 
@@ -89,10 +101,10 @@ ZSearch 不只是一个通用搜索框。首页输入框下方的「热门插件
    git clone https://github.com/hAcKlyc/dsh-zsearch.git
    ```
 
-2. 打开 **Plugins → Add plugin**，选择 `dsh-zsearch` 目录。
-3. 安装后重启 DSH（Host 代码在启动时加载）。
+2. 桌面端：**Plugins → Add plugin**，选择 `dsh-zsearch` 目录。
+3. 安装后重启 DSH。
 
-### CLI
+CLI：
 
 ```sh
 git clone https://github.com/hAcKlyc/dsh-zsearch.git
