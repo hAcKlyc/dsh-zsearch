@@ -60,6 +60,8 @@ function pluginContext(plugin) {
   return lines.join('\n')
 }
 
+// Desktop forwards dsh-app:// requests without Origin/Sec-Fetch-Site; headerless
+// local requests remain available, while cross-site browser requests carry one.
 function isTrustedBrowserRequest(req, ctx) {
   const headers = req?.headers ?? {}
   const site = String(headers['sec-fetch-site'] ?? '').toLowerCase()
@@ -74,7 +76,16 @@ function isTrustedBrowserRequest(req, ctx) {
     expected = `${protocol}//${headers.host}`
   }
   if (!expected) return false
-  try { return new URL(origin).origin === new URL(expected).origin } catch { return false }
+  try {
+    const actual = new URL(origin)
+    const wanted = new URL(expected)
+    if (actual.protocol !== wanted.protocol || actual.port !== wanted.port) return false
+    if (actual.hostname === wanted.hostname) return true
+    const loopback = new Set(['127.0.0.1', 'localhost', '::1', '[::1]'])
+    return loopback.has(actual.hostname) && loopback.has(wanted.hostname)
+  } catch {
+    return false
+  }
 }
 
 function sendJson(res, status, body) {
@@ -1037,6 +1048,8 @@ export function apply(ctx, config = {}) {
       const url = new URL(req.url ?? '/', 'http://localhost')
       const sensitive = url.pathname === '/zsearch/api/setup/install'
         || url.pathname === '/zsearch/api/setup/secret'
+        || url.pathname === '/zsearch/api/setup/status'
+        || url.pathname === '/zsearch/api/diagnostics'
         || url.pathname === '/zsearch/api/plugins/install'
         || url.pathname === '/zsearch/api/plugins/install/inspect'
         || url.pathname === '/zsearch/api/stream'
