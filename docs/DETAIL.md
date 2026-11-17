@@ -14,15 +14,15 @@ ZSearch 是 DeepSeek Harness 里的智能搜索插件：在 DSH 中同时检索�
 
 ## 安装
 
-当前 npm 包尚未发布，推荐从源码目录安装。
-
-桌面端：**Plugins → Add plugin**，选择 `dsh-zsearch` 目录。安装/更新 Host 代码后重启 DSH。
-
-CLI：
+npm 已发布：
 
 ```sh
-dsh plugin --profile <profile> add ./dsh-zsearch
+dsh plugin --profile <profile> add dsh-zsearch
 ```
+
+桌面端：**Plugins → Add plugin**，输入 `dsh-zsearch`。安装/更新 Host 代码后重启 DSH。
+
+也可以从 GitHub Release 的 tarball 或源码目录安装。
 
 ## 环境要求
 

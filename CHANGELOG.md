@@ -3,6 +3,13 @@
 `dsh-zsearch` 的版本变更。版本号只描述插件包本身；`docs/versions.md` 记录它与 DSH、知乎
 Skill、CLI 的当前组合状态。
 
+## 0.3.1 — 2026-11-17
+
+### Changed
+
+- 发布到 npm：`dsh plugin --profile <profile> add dsh-zsearch` 可直接安装。
+- README 与插件详情页安装说明改为 npm 优先；GitHub Release 和源码安装保留为备选。
+
 ## 0.3.0 — 2026-11-17
 
 ### Added

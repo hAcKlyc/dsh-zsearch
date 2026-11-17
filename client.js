@@ -1964,7 +1964,7 @@ body[data-ds-dark-theme] .zs-idx, body[data-ds-dark-theme] .zs-arrow { color:var
             }, '清空'))),
           section('关于',
             h('div', { className: 'zs-set-about' },
-              h('b', null, 'dsh-zsearch 0.3.0'),
+              h('b', null, 'dsh-zsearch 0.3.1'),
               h('span', null, '知乎 + 全网检索，左答右证。'),
               h('span', null, '设置只保存在本机 origin，不包含任何凭据。'))),
         ),
