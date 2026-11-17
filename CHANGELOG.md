@@ -3,6 +3,12 @@
 `dsh-zsearch` 的版本变更。版本号只描述插件包本身；`docs/versions.md` 记录它与 DSH、知乎
 Skill、CLI 的当前组合状态。
 
+## 0.3.2 — 2026-11-17
+
+### Fixed
+
+- Skill 检测增加 DSH `workspaceRegistry` 中已注册项目的 `.agents/skills/zhihu`；工作区里安装的知乎 Skill 不再显示「未检出」。缺失该服务或服务异常时保持原有本地/用户目录探测。
+
 ## 0.3.1 — 2026-11-17
 
 ### Fixed

@@ -257,7 +257,17 @@ function skillAt(dir) {
   }
 }
 
-function detectSkill(extraDirs = []) {
+export function registeredWorkspaceDirs(ctx) {
+  try {
+    return (ctx.get('workspaceRegistry')?.list?.() ?? [])
+      .map((workspace) => workspace.path)
+      .filter(Boolean)
+  } catch {
+    return []
+  }
+}
+
+export function detectSkill(extraDirs = []) {
   const tried = []
   for (const base of [...extraDirs, ...SKILL_DIRS]) {
     if (!base) continue
@@ -1400,7 +1410,7 @@ export function apply(ctx, config = {}) {
       if (url.pathname === '/zsearch/api/setup/status') {
         const cli = await detectCli(currentCliPath())
         const auth = await authInfo(cli.found ? cli.path : null)
-        const skill = detectSkill([config.projectDir].filter(Boolean))
+        const skill = detectSkill([config.projectDir, ...registeredWorkspaceDirs(ctx)].filter(Boolean))
         let manifest = null
         try {
           const m = await getManifest()

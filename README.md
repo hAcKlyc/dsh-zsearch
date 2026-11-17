@@ -6,7 +6,7 @@
 
 **智能搜索插件 · 知乎 + 全网 · 左答右证**
 
-版本 **0.3.1** · Apache-2.0 · 适用于 DSH `>=0.2.2-rc.1 <0.3.0`
+版本 **0.3.2** · Apache-2.0 · 适用于 DSH `>=0.2.2-rc.1 <0.3.0`
 npm 已发布：[dsh-zsearch](https://www.npmjs.com/package/dsh-zsearch)；也提供 [GitHub Release](https://github.com/hAcKlyc/dsh-zsearch/releases/tag/v0.3.0) 和源码安装。
 
 ![ZSearch 首页](https://raw.githubusercontent.com/hAcKlyc/dsh-zsearch/main/docs/home.png)

@@ -1,6 +1,6 @@
 {
   "name": "dsh-zsearch",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "type": "module",
   "description": "Search Zhihu and the web inside DeepSeek Harness, with streamed answers beside cited sources, plus AI reviews of DSH plugins.",
   "license": "Apache-2.0",
@@ -54,7 +54,7 @@
   },
   "scripts": {
     "check": "node --check index.js && node --check client.js",
-    "test": "node test/windows.mjs && node test/integration.mjs && node test/client-smoke.mjs && node test/client-render.mjs",
+    "test": "node test/windows.mjs && node test/skill-detect.mjs && node test/integration.mjs && node test/client-smoke.mjs && node test/client-render.mjs",
     "verify": "npm run check && npm test",
     "prepublishOnly": "npm run verify"
   },
