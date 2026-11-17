@@ -1,7 +1,7 @@
 import { execFile, spawn } from 'node:child_process'
 import { createHash, randomUUID } from 'node:crypto'
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
+import { homedir, tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 export const name = 'dsh-zsearch'
@@ -10,7 +10,7 @@ export const inject = ['webServer']
 const MANIFEST_URL = 'https://developer-cdn.zhihu.com/zhihu-cli/releases/stable/manifest.json'
 const SKILL_DIRS = [
   join(process.cwd(), '.agents', 'skills', 'zhihu'),
-  join(process.env.HOME ?? '', '.agents', 'skills', 'zhihu'),
+  join(homedir(), '.agents', 'skills', 'zhihu'),
 ]
 const SECRET_REF = 'ZHIHU_ACCESS_SECRET'
 const AVATAR_UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0 Safari/537.36'
@@ -269,16 +269,25 @@ function detectSkill(extraDirs = []) {
   return { found: false, tried }
 }
 
-function cliCandidates(configPath) {
-  const home = process.env.HOME ?? ''
-  const fromEnv = process.env.ZHIHU_CLI_HOME ? join(process.env.ZHIHU_CLI_HOME, 'current', 'zhihu-cli') : ''
-  return [
-    configPath,
-    fromEnv,
-    join(home, 'Library', 'Application Support', 'zhihu-cli', 'current', 'zhihu-cli'),
-    join(home, '.local', 'share', 'zhihu-cli', 'current', 'zhihu-cli'),
-    'zhihu-cli',
-  ].filter(Boolean)
+export function cliCandidates(configPath, options = {}) {
+  const platform = options.platform ?? process.platform
+  const env = options.env ?? process.env
+  const joinPath = options.joinPath ?? join
+  const home = options.home
+    || (platform === 'win32' ? env.USERPROFILE : env.HOME)
+    || homedir()
+  const bin = platform === 'win32' ? 'zhihu-cli.exe' : 'zhihu-cli'
+  const candidates = [configPath]
+  if (env.ZHIHU_CLI_HOME) candidates.push(joinPath(env.ZHIHU_CLI_HOME, 'current', bin))
+  if (platform === 'win32') {
+    const localAppData = env.LOCALAPPDATA || (home ? joinPath(home, 'AppData', 'Local') : '')
+    if (localAppData) candidates.push(joinPath(localAppData, 'ZhihuCLI', 'current', bin))
+  } else {
+    candidates.push(joinPath(home, 'Library', 'Application Support', 'zhihu-cli', 'current', bin))
+    candidates.push(joinPath(home, '.local', 'share', 'zhihu-cli', 'current', bin))
+  }
+  candidates.push(bin)
+  return [...new Set(candidates.filter(Boolean))]
 }
 
 async function probeBinary(binary) {
@@ -333,9 +342,16 @@ async function downloadVerified(url, expectedSha, expectedSize) {
   return buffer
 }
 
+export function psLiteral(value) {
+  return `'${String(value).replace(/'/g, "''")}'`
+}
+
 async function unzipTo(zipPath, targetDir) {
   if (process.platform === 'win32') {
-    return run('powershell', ['-NoProfile', '-Command', `Expand-Archive -LiteralPath '${zipPath}' -DestinationPath '${targetDir}' -Force`], 60_000)
+    return run('powershell', [
+      '-NoProfile', '-Command',
+      `Expand-Archive -LiteralPath ${psLiteral(zipPath)} -DestinationPath ${psLiteral(targetDir)} -Force`,
+    ], 60_000)
   }
   return run('unzip', ['-q', '-o', zipPath, '-d', targetDir], 60_000)
 }
@@ -360,8 +376,8 @@ async function installToolchain(configPath, emit, dryRun) {
       emit('done', { dryRun: true, skillVersion: skill.latest_version })
       return { dryRun: true }
     }
-    const target = join(process.env.HOME ?? '', '.agents', 'skills', 'zhihu')
-    mkdirSync(join(process.env.HOME ?? '', '.agents', 'skills'), { recursive: true })
+    const target = join(homedir(), '.agents', 'skills', 'zhihu')
+    mkdirSync(join(homedir(), '.agents', 'skills'), { recursive: true })
     if (existsSync(target)) rmSync(target, { recursive: true, force: true })
     renameSync(root, target)
     emit('step', { step: 'install-skill', message: `Skill ${skill.latest_version} 已安装到 ~/.agents/skills/zhihu` })
@@ -954,10 +970,12 @@ async function fetchAvatar(url) {
 }
 
 export function apply(ctx, config = {}) {
+  let installedCliPath = ''
+  const currentCliPath = () => installedCliPath || config.cliPath || ''
   let cliCache = { at: 0, path: config.cliPath || '' }
   const getCli = async () => {
     if (cliCache.path && Date.now() - cliCache.at < 60_000) return cliCache.path
-    const found = await detectCli(config.cliPath || '')
+    const found = await detectCli(currentCliPath())
     cliCache = { at: Date.now(), path: found.found ? found.path : '' }
     return cliCache.path
   }
@@ -1380,7 +1398,7 @@ export function apply(ctx, config = {}) {
         return
       }
       if (url.pathname === '/zsearch/api/setup/status') {
-        const cli = await detectCli(config.cliPath || '')
+        const cli = await detectCli(currentCliPath())
         const auth = await authInfo(cli.found ? cli.path : null)
         const skill = detectSkill([config.projectDir].filter(Boolean))
         let manifest = null
@@ -1403,8 +1421,13 @@ export function apply(ctx, config = {}) {
         const emit = (event, data) => res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`)
         try {
           emit('step', { step: 'checking', message: '读取官方发布清单' })
-          await installToolchain(config.cliPath || '', emit, url.searchParams.get('dryRun') === '1')
-          cliCache = { at: 0, path: '' }
+          const installed = await installToolchain(currentCliPath(), emit, url.searchParams.get('dryRun') === '1')
+          if (installed?.binaryPath) {
+            installedCliPath = installed.binaryPath
+            cliCache = { at: Date.now(), path: installed.binaryPath }
+          } else {
+            cliCache = { at: 0, path: '' }
+          }
         } catch (error) {
           emit('failure', { message: String(error?.message ?? error) })
         }
@@ -1421,7 +1444,7 @@ export function apply(ctx, config = {}) {
           sendJson(res, 400, { ok: false, code: 'INVALID_SECRET', message: 'Secret 格式不正确' })
           return
         }
-        const cli = await detectCli(config.cliPath || '')
+        const cli = await detectCli(currentCliPath())
         if (!cli.found) {
           sendJson(res, 409, { ok: false, code: 'CLI_MISSING', message: '请先安装知乎 CLI' })
           return

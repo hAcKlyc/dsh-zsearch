@@ -5,6 +5,12 @@ Skill、CLI 的当前组合状态。
 
 ## 0.3.1 — 2026-11-17
 
+### Fixed
+
+- Windows：`cliCandidates()` 增加 `%LOCALAPPDATA%\ZhihuCLI\current\zhihu-cli.exe`、`USERPROFILE` 回退与 `ZHIHU_CLI_HOME` 的 `.exe` 后缀；安装成功后把 `binary_path` 写回运行时探测路径，修复「安装成功但 cli.found 恒为 false」。
+- Windows：Skill 安装目录改用 `os.homedir()`，不再依赖空的 `HOME`。
+- Windows：`Expand-Archive` 的路径改用 PowerShell 单引号转义，路径含 `'` 时不再断裂。
+
 ### Changed
 
 - 发布到 npm：`dsh plugin --profile <profile> add dsh-zsearch` 可直接安装。

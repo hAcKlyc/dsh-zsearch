@@ -124,7 +124,7 @@ Secret 不会写入仓库、日志或对话记录；钥匙串不可用时回退�
 
 - **DeepSeek Harness** `>=0.2.2-rc.1 <0.3.0`（桌面端或 `dsh web` 均可）。
 - **Node.js** `>=24.9.0`（DSH 自身要求）。
-- 本机 **`zhihu-cli`** 与知乎 **Access Secret**。
+- 本机 **`zhihu-cli`** 与知乎 **Access Secret**。Windows 默认位于 `%LOCALAPPDATA%\ZhihuCLI\current\zhihu-cli.exe`。
 - DSH 中已配置可用的默认模型：回答、筛选和扩词都通过宿主模型完成。
 
 ## 数据与隐私

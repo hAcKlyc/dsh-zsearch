@@ -54,7 +54,7 @@
   },
   "scripts": {
     "check": "node --check index.js && node --check client.js",
-    "test": "node test/integration.mjs && node test/client-smoke.mjs && node test/client-render.mjs",
+    "test": "node test/windows.mjs && node test/integration.mjs && node test/client-smoke.mjs && node test/client-render.mjs",
     "verify": "npm run check && npm test",
     "prepublishOnly": "npm run verify"
   },

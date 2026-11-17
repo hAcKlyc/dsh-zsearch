@@ -29,6 +29,9 @@ dsh plugin --profile <profile> add dsh-zsearch
 - DeepSeek Harness `>=0.2.2-rc.1 <0.3.0`。
 - Node.js `>=24.9.0`。
 - 本机 `zhihu-cli` 与知乎 Access Secret；首次使用会显示三步引导。
+  - Windows：`%LOCALAPPDATA%\ZhihuCLI\current\zhihu-cli.exe`
+  - macOS：`~/Library/Application Support/zhihu-cli/current/zhihu-cli`
+  - Linux：`~/.local/share/zhihu-cli/current/zhihu-cli`
 - DSH 中已配置可用的默认模型。
 
 ## 权限与隐私
