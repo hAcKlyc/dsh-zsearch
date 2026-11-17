@@ -2,15 +2,15 @@ import { execFile, spawn } from 'node:child_process'
 import { createHash, randomUUID } from 'node:crypto'
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs'
 import { homedir, tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join } from 'node:path'
 
 export const name = 'dsh-zsearch'
 export const inject = ['webServer']
 
 const MANIFEST_URL = 'https://developer-cdn.zhihu.com/zhihu-cli/releases/stable/manifest.json'
-const SKILL_DIRS = [
-  join(process.cwd(), '.agents', 'skills', 'zhihu'),
-  join(homedir(), '.agents', 'skills', 'zhihu'),
+const SKILL_SUBPATHS = [
+  join('.dsh', 'skills', 'zhihu'),
+  join('.agents', 'skills', 'zhihu'),
 ]
 const SECRET_REF = 'ZHIHU_ACCESS_SECRET'
 const AVATAR_UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0 Safari/537.36'
@@ -269,14 +269,49 @@ export function registeredWorkspaceDirs(ctx) {
 
 export function detectSkill(extraDirs = []) {
   const tried = []
-  for (const base of [...extraDirs, ...SKILL_DIRS]) {
-    if (!base) continue
-    const dir = base.endsWith(join('.agents', 'skills', 'zhihu')) ? base : join(base, '.agents', 'skills', 'zhihu')
-    tried.push(dir)
-    const found = skillAt(dir)
-    if (found) return { found: true, ...found, tried }
+  const bases = [...extraDirs, process.cwd(), homedir()].filter(Boolean)
+  for (const base of bases) {
+    const knownSubpath = SKILL_SUBPATHS.find((subpath) => base.endsWith(subpath))
+    const dirs = knownSubpath ? [base] : SKILL_SUBPATHS.map((subpath) => join(base, subpath))
+    for (const dir of dirs) {
+      if (tried.includes(dir)) continue
+      tried.push(dir)
+      const found = skillAt(dir)
+      if (found) return { found: true, ...found, tried }
+    }
   }
   return { found: false, tried }
+}
+
+function skillInfoFromSummary(summary) {
+  const file = typeof summary?.path === 'string' ? summary.path : ''
+  const dir = file.endsWith('SKILL.md') ? dirname(file) : file
+  const info = dir ? skillAt(dir) : null
+  return {
+    found: true,
+    path: dir || file || null,
+    version: info?.version ?? null,
+    minCli: info?.minCli ?? null,
+    source: summary?.source ?? null,
+    provider: summary?.provider ?? null,
+    tried: [file || dir].filter(Boolean),
+  }
+}
+
+export async function detectSkillViaRegistry(ctx, cwds = []) {
+  const skills = typeof ctx?.get === 'function' ? ctx.get('skills') : null
+  if (!skills?.list) return null
+  for (const cwd of [...new Set(cwds.filter(Boolean))]) {
+    try {
+      const result = await skills.list({ cwd })
+      const rows = Array.isArray(result) ? result : Array.isArray(result?.skills) ? result.skills : []
+      const hit = rows.find((entry) => entry?.name === 'zhihu')
+      if (hit) return skillInfoFromSummary(hit)
+    } catch {
+      // An unavailable provider must not hide a file that is still on disk.
+    }
+  }
+  return null
 }
 
 export function cliCandidates(configPath, options = {}) {
@@ -1410,7 +1445,10 @@ export function apply(ctx, config = {}) {
       if (url.pathname === '/zsearch/api/setup/status') {
         const cli = await detectCli(currentCliPath())
         const auth = await authInfo(cli.found ? cli.path : null)
-        const skill = detectSkill([config.projectDir, ...registeredWorkspaceDirs(ctx)].filter(Boolean))
+        const workspaceDirs = registeredWorkspaceDirs(ctx)
+        const skillCwds = [process.cwd(), config.projectDir, ...workspaceDirs].filter(Boolean)
+        const skill = await detectSkillViaRegistry(ctx, skillCwds)
+          ?? detectSkill([config.projectDir, ...workspaceDirs].filter(Boolean))
         let manifest = null
         try {
           const m = await getManifest()
