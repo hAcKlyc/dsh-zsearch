@@ -718,6 +718,10 @@ body[data-ds-dark-theme] .zs-idx, body[data-ds-dark-theme] .zs-arrow { color:var
 .zs-set-danger:hover { background:color-mix(in srgb, var(--zs-err) 8%, transparent); }
 .zs-set-about { display:flex; flex-direction:column; gap:4px; font-size:11px; line-height:1.6; color:var(--zs-ink-3); }
 .zs-set-about b { font-size:12px; color:var(--zs-ink); }
+.zs-set-group { display:flex; flex-direction:column; align-items:center; gap:8px; padding:6px 0 2px; }
+.zs-set-group img { width:200px; max-width:100%; height:auto; border-radius:14px; background:#101113;
+  box-shadow:0 0 0 .5px var(--zs-line-2), 0 8px 22px -12px rgba(0,0,0,.35); }
+.zs-set-group .zs-set-note { margin:0; text-align:center; }
 .zs-set-foot { display:flex; align-items:center; gap:10px; padding:12px 16px 14px; border-top:.5px solid var(--zs-line-2); }
 .zs-set-reset { height:28px; padding:0 11px; border:0; border-radius:8px; background:var(--zs-sunken); color:var(--zs-ink-2);
   font-size:11px; cursor:pointer; box-shadow:inset 0 0 0 .5px var(--zs-line-2); }
@@ -1964,9 +1968,18 @@ body[data-ds-dark-theme] .zs-idx, body[data-ds-dark-theme] .zs-arrow { color:var
             }, '清空'))),
           section('关于',
             h('div', { className: 'zs-set-about' },
-              h('b', null, 'dsh-zsearch 0.3.2'),
+              h('b', null, 'dsh-zsearch 0.3.3'),
               h('span', null, '知乎 + 全网检索，左答右证。'),
               h('span', null, '设置只保存在本机 origin，不包含任何凭据。'))),
+          section('用户交流群',
+            h('div', { className: 'zs-set-group' },
+              h('img', {
+                src: '/zsearch/assets/wechat-group.jpg',
+                alt: 'dsh-zsearch 用户交流群二维码',
+                loading: 'lazy',
+              }),
+              h('p', { className: 'zs-set-note' },
+                '微信扫码加入「dsh-zsearch 需求反馈」群；二维码 7 天内（11 月 26 日前）有效。'))),
         ),
         h('div', { className: 'zs-set-foot' },
           h('button', { className: 'zs-set-reset', type: 'button', onClick: onResetSettings }, '恢复默认'),

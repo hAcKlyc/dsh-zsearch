@@ -8,6 +8,7 @@ export const name = 'dsh-zsearch'
 export const inject = ['webServer']
 
 const MANIFEST_URL = 'https://developer-cdn.zhihu.com/zhihu-cli/releases/stable/manifest.json'
+const WECHAT_GROUP_IMAGE = new URL('./docs/wechat-group.jpg', import.meta.url)
 const SKILL_SUBPATHS = [
   join('.dsh', 'skills', 'zhihu'),
   join('.agents', 'skills', 'zhihu'),
@@ -1118,6 +1119,20 @@ export function apply(ctx, config = {}) {
         || url.pathname === '/zsearch/api/stream'
       if (sensitive && !isTrustedBrowserRequest(req, ctx)) {
         sendJson(res, 403, { error: 'origin_not_allowed' })
+        return
+      }
+      if (url.pathname === '/zsearch/assets/wechat-group.jpg') {
+        try {
+          const image = readFileSync(WECHAT_GROUP_IMAGE)
+          res.writeHead(200, {
+            'content-type': 'image/jpeg',
+            'cache-control': 'public, max-age=3600',
+            'content-length': image.length,
+          })
+          res.end(image)
+        } catch {
+          sendJson(res, 404, { error: 'not_found' })
+        }
         return
       }
       if (url.pathname === '/zsearch/api/plugins/list') {

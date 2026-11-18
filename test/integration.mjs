@@ -263,6 +263,24 @@ function runJson(handler, url) {
   })
 }
 
+function runBinary(handler, url) {
+  return new Promise((resolve, reject) => {
+    const chunks = []
+    let status = 0
+    let headers = {}
+    const res = {
+      writeHead(code, nextHeaders) { status = code; headers = nextHeaders ?? {} },
+      write(chunk) { chunks.push(Buffer.from(chunk)) },
+      end(chunk) {
+        if (chunk !== undefined) chunks.push(Buffer.from(chunk))
+        resolve({ status, headers, body: Buffer.concat(chunks) })
+      },
+    }
+    const req = { url, method: 'GET', socket: { remoteAddress: '127.0.0.1' }, on() {} }
+    handler(req, res).catch(reject)
+  })
+}
+
 function runPost(handler, url, payload, headers = {}) {
   return new Promise((resolve, reject) => {
     let body = ''
@@ -491,6 +509,12 @@ async function main() {
   assert.ok(byName(fourth.events, 'answer').length > 0)
 
   // Plugin topic: catalog, install inspection, install, and the plugin search mode.
+  const qr = await runBinary(handler, '/zsearch/assets/wechat-group.jpg')
+  assert.equal(qr.status, 200)
+  assert.match(String(qr.headers['content-type']), /^image\/jpeg/)
+  assert.equal(qr.body.subarray(0, 2).toString('hex'), 'ffd8', 'serves a JPEG')
+  assert.ok(qr.body.length > 1000, 'serves the full QR asset')
+
   const pluginCatalog = await runJson(handler, '/zsearch/api/plugins/list')
   assert.equal(pluginCatalog.count, 60)
   assert.equal(pluginCatalog.items.length, 60)

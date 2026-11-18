@@ -1,6 +1,6 @@
 {
   "name": "dsh-zsearch",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "type": "module",
   "description": "Search Zhihu and the web inside DeepSeek Harness, with streamed answers beside cited sources, plus AI reviews of DSH plugins.",
   "license": "Apache-2.0",
@@ -37,7 +37,8 @@
     "README.md",
     "CHANGELOG.md",
     "NOTICE",
-    "docs/DETAIL.md"
+    "docs/DETAIL.md",
+    "docs/wechat-group.jpg"
   ],
   "dsh": {
     "bundle": {
