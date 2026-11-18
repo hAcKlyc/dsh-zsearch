@@ -15,6 +15,8 @@ npm 已发布：[dsh-zsearch](https://www.npmjs.com/package/dsh-zsearch)；也�
 
 <p align="center"><sub>微信扫码加入「dsh-zsearch 需求反馈」群 · 二维码 7 天内（11 月 26 日前）有效</sub></p>
 
+<p align="center"><sub>知乎发布帖：<a href="https://www.zhihu.com/question/2103904122118169735/answer/2105977798049231620">我做了一个 DeepSeek Harness 插件，叫 dsh-zsearch</a></sub></p>
+
 ![ZSearch 首页](https://raw.githubusercontent.com/hAcKlyc/dsh-zsearch/main/docs/home.png)
 
 ---
