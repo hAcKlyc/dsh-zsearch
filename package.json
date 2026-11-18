@@ -37,8 +37,7 @@
     "README.md",
     "CHANGELOG.md",
     "NOTICE",
-    "docs/DETAIL.md",
-    "docs/wechat-group.jpg"
+    "docs/DETAIL.md"
   ],
   "dsh": {
     "bundle": {

@@ -381,7 +381,11 @@ assert.ok(scan().some((text) => text.includes('外观')), 'settings sections ren
 assert.ok(scan().some((text) => text.includes('回答字号')), 'all appearance rows render')
 assert.ok(scan().some((text) => text.includes('显示 DEBUG 按钮')), 'debug toggle renders')
 assert.ok(scan().some((text) => text.includes('用户交流群')), 'community QR section renders')
-assert.ok(findNode(lastTree, (node) => node.type === 'img' && node.props?.src === '/zsearch/assets/wechat-group.jpg'), 'community QR image renders')
+const qrImage = findNode(lastTree, (node) => node.type === 'img' && node.props?.src === 'https://raw.githubusercontent.com/hAcKlyc/dsh-zsearch/main/docs/wechat-group.jpg')
+assert.ok(qrImage, 'community QR uses the remote GitHub image')
+qrImage.props.onError()
+schedule()
+assert.ok(!scan().some((text) => text.includes('用户交流群')), 'failed remote QR hides the whole section')
 
 slots.length = 0
 component = Setup

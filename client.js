@@ -103,6 +103,7 @@ window.__ModuleLoader__.load({
     const PANEL_KEY = 'dsh-zsearch:panel.v1'
     const PANEL_VERSION = 2
     const SETTINGS_KEY = 'dsh-zsearch:settings.v1'
+    const COMMUNITY_QR_URL = 'https://raw.githubusercontent.com/hAcKlyc/dsh-zsearch/main/docs/wechat-group.jpg'
     const DEFAULT_SETTINGS = {
       version: 1,
       theme: 'system',
@@ -1889,6 +1890,7 @@ body[data-ds-dark-theme] .zs-idx, body[data-ds-dark-theme] .zs-arrow { color:var
     function SettingsPanel({ value, onChange, onClose, setup, onRefreshSetup, onOpenSetup, onClearPanel, onResetSettings }) {
       const [diagnostics, setDiagnostics] = useState(null)
       const [copied, setCopied] = useState(false)
+      const [qrFailed, setQrFailed] = useState(false)
 
       useEffect(() => {
         let live = true
@@ -1971,12 +1973,13 @@ body[data-ds-dark-theme] .zs-idx, body[data-ds-dark-theme] .zs-arrow { color:var
               h('b', null, 'dsh-zsearch 0.3.3'),
               h('span', null, '知乎 + 全网检索，左答右证。'),
               h('span', null, '设置只保存在本机 origin，不包含任何凭据。'))),
-          section('用户交流群',
+          qrFailed ? null : section('用户交流群',
             h('div', { className: 'zs-set-group' },
               h('img', {
-                src: '/zsearch/assets/wechat-group.jpg',
+                src: COMMUNITY_QR_URL,
                 alt: 'dsh-zsearch 用户交流群二维码',
                 loading: 'lazy',
+                onError: () => setQrFailed(true),
               }),
               h('p', { className: 'zs-set-note' },
                 '微信扫码加入「dsh-zsearch 需求反馈」群；二维码 7 天内（11 月 26 日前）有效。'))),
