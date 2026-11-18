@@ -6,6 +6,10 @@
 
 **智能搜索插件 · 知乎 + 全网 · 左答右证**
 
+[![npm](https://img.shields.io/npm/v/dsh-zsearch?color=2563eb)](https://www.npmjs.com/package/dsh-zsearch)
+[![GitHub stars](https://img.shields.io/github/stars/hAcKlyc/dsh-zsearch?style=flat&label=GitHub)](https://github.com/hAcKlyc/dsh-zsearch)
+[![dsh-plugin](https://img.shields.io/badge/topic-dsh--plugin-0e7490)](https://github.com/topics/dsh-plugin)
+
 版本 **0.3.3** · Apache-2.0 · 适用于 DSH `>=0.2.2-rc.1 <0.3.0`
 npm 已发布：[dsh-zsearch](https://www.npmjs.com/package/dsh-zsearch)；也提供 [GitHub Release](https://github.com/hAcKlyc/dsh-zsearch/releases/tag/v0.3.0) 和源码安装。
 
@@ -17,7 +21,7 @@ npm 已发布：[dsh-zsearch](https://www.npmjs.com/package/dsh-zsearch)；也�
 
 <p align="center"><sub>知乎发布帖：<a href="https://www.zhihu.com/question/2103904122118169735/answer/2105977798049231620">我做了一个 DeepSeek Harness 插件，叫 dsh-zsearch</a></sub></p>
 
-![ZSearch 首页](https://raw.githubusercontent.com/hAcKlyc/dsh-zsearch/main/docs/home.png)
+![ZSearch 首页](https://raw.githubusercontent.com/hAcKlyc/dsh-zsearch/main/docs/zsearch-home.jpg)
 
 ---
 
@@ -60,7 +64,7 @@ npm 已发布：[dsh-zsearch](https://www.npmjs.com/package/dsh-zsearch)；也�
 | **划词检索** | 在对话里选中一段文字，点浮层直接带词搜索 |
 | **状态恢复** | 切走或刷新后，检索词、回答和卡片还在 |
 
-![ZSearch 结果页](https://raw.githubusercontent.com/hAcKlyc/dsh-zsearch/main/docs/topbar-fixed.png)
+![ZSearch 结果页](https://raw.githubusercontent.com/hAcKlyc/dsh-zsearch/main/docs/zsearch-detail.jpg)
 
 ## 专题：热门插件
 
