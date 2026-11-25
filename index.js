@@ -539,6 +539,21 @@ function collectWeb(cliPath, queries) {
       .filter((item) => item.host && !isZhihuHost(item.host) && !/标签|归档|分类|tag|category/i.test(item.title ?? '')))
 }
 
+async function resolveReasoningEffort(llm, selection, preferred, signal) {
+  if (!preferred) return undefined
+  if (typeof llm?.resolveModelInfo !== 'function') return preferred
+  try {
+    const info = await llm.resolveModelInfo(selection.provider, selection.model, signal)
+    const efforts = info?.reasoning?.efforts
+    if (!Array.isArray(efforts) || efforts.length === 0) return undefined
+    if (efforts.some((item) => item?.id === preferred)) return preferred
+    return efforts[0]?.id ?? undefined
+  } catch (error) {
+    if (signal?.aborted) throw error
+    return undefined
+  }
+}
+
 async function streamText(ctx, { system, prompt, maxTokens, timeoutMs, reasoningEffort, label = 'llm' }) {
   const llm = ctx.get('llm')
   const modelService = ctx.get('agentDefaultModel')
@@ -556,10 +571,11 @@ async function streamText(ctx, { system, prompt, maxTokens, timeoutMs, reasoning
   let finish = null
   let usage = null
   try {
+    const effort = await resolveReasoningEffort(llm, selection, reasoningEffort, controller.signal)
     const stream = llm.stream({
       provider: selection.provider,
       model: selection.model,
-      ...(reasoningEffort ? { reasoningEffort } : {}),
+      ...(effort ? { reasoningEffort: effort } : {}),
       maxTokens,
       signal: controller.signal,
       system,
@@ -672,10 +688,11 @@ async function* streamAnswer(ctx, query, candidates, maxTokens = 8000, context =
   let finish = null
   let usage = null
   try {
+    const effort = await resolveReasoningEffort(llm, selection, 'off', controller.signal)
     const stream = llm.stream({
       provider: selection.provider,
       model: selection.model,
-      reasoningEffort: 'off',
+      ...(effort ? { reasoningEffort: effort } : {}),
       maxTokens,
       signal: controller.signal,
       system: context ? PLUGIN_ANSWER_SYSTEM : ANSWER_SYSTEM,

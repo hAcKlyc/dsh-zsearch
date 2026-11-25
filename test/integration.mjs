@@ -82,8 +82,22 @@ function firstSentences(text, count = 2) {
 
 function makeLlm(calls, behavior = {}) {
   let answerAttempts = 0
-  return {
+  const base = {
+    ...(behavior.modelInfo !== undefined ? {
+      async resolveModelInfo() {
+        if (behavior.modelInfo instanceof Error) throw behavior.modelInfo
+        return behavior.modelInfo
+      },
+    } : {}),
     stream(options) {
+      if (Array.isArray(behavior.rejectEfforts) && behavior.rejectEfforts.includes(options.reasoningEffort)) {
+        throw new Error(`provider "${options.provider}" model "${options.model}" does not support reasoning effort "${options.reasoningEffort}"`)
+      }
+      if (behavior.rejectAnyEffort && options.reasoningEffort !== undefined) {
+        throw new Error(`provider "${options.provider}" model "${options.model}" does not support reasoning effort "${options.reasoningEffort}"`)
+      }
+      calls.efforts ??= []
+      calls.efforts.push(options.reasoningEffort)
       const system = String(options.system ?? '')
       return (async function* () {
         if (system.includes('改写成')) {
@@ -183,6 +197,7 @@ function makeLlm(calls, behavior = {}) {
       })()
     },
   }
+  return base
 }
 
 function makeCtx(llm, manager) {
@@ -526,6 +541,49 @@ async function main() {
   const pluginCards = cards(pluginRun.events)
   assert.equal(pluginCards[0].group.label, '真实体验')
   assert.equal(pluginCards[1].group.label, '局限与风险')
+
+  // Reasoning effort fallback: keep 'off' when supported, fall back to lowest supported effort otherwise, and omit for non-reasoning models.
+  const offSupportedCalls = { expand: 0, curate: 0, answer: 0, backfill: 0 }
+  const offSupported = makeCtx(makeLlm(offSupportedCalls, {
+    modelInfo: { reasoning: { efforts: [{ id: 'off', name: 'Off' }, { id: 'low', name: 'Low' }] } },
+  }))
+  apply(offSupported.ctx, { cliPath: cli, cacheMinutes: 10, debug: false })
+  const offSupportedRun = await runSse(offSupported.state.registered.handler, `/zsearch/api/stream?q=${encodeURIComponent('支持关闭推理测试')}`)
+  assert.equal(byName(offSupportedRun.events, 'done')[0].answer.finish, 'stop')
+  assert.ok(offSupportedCalls.efforts.length >= 3 && offSupportedCalls.efforts.every((effort) => effort === 'off'))
+
+  const noOffCalls = { expand: 0, curate: 0, answer: 0, backfill: 0 }
+  const noOff = makeCtx(makeLlm(noOffCalls, {
+    modelInfo: { reasoning: { efforts: [{ id: 'low', name: 'Low' }, { id: 'medium', name: 'Medium' }, { id: 'high', name: 'High' }] } },
+    rejectEfforts: ['off'],
+  }))
+  apply(noOff.ctx, { cliPath: cli, cacheMinutes: 10, debug: false })
+  const noOffRun = await runSse(noOff.state.registered.handler, `/zsearch/api/stream?q=${encodeURIComponent('不支持off回退low测试')}`)
+  assert.equal(byName(noOffRun.events, 'answer-status').length, 0)
+  assert.equal(byName(noOffRun.events, 'done')[0].answer.finish, 'stop')
+  assert.ok(noOffCalls.efforts.length >= 3 && noOffCalls.efforts.every((effort) => effort === 'low'))
+
+  const nonReasoningCalls = { expand: 0, curate: 0, answer: 0, backfill: 0 }
+  const nonReasoning = makeCtx(makeLlm(nonReasoningCalls, {
+    modelInfo: {},
+    rejectAnyEffort: true,
+  }))
+  apply(nonReasoning.ctx, { cliPath: cli, cacheMinutes: 10, debug: false })
+  const nonReasoningRun = await runSse(nonReasoning.state.registered.handler, `/zsearch/api/stream?q=${encodeURIComponent('非推理模型省略effort测试')}`)
+  assert.equal(byName(nonReasoningRun.events, 'answer-status').length, 0)
+  assert.equal(byName(nonReasoningRun.events, 'done')[0].answer.finish, 'stop')
+  assert.ok(nonReasoningCalls.efforts.length >= 3 && nonReasoningCalls.efforts.every((effort) => effort === undefined))
+
+  const infoErrorCalls = { expand: 0, curate: 0, answer: 0, backfill: 0 }
+  const infoError = makeCtx(makeLlm(infoErrorCalls, {
+    modelInfo: new Error('metadata lookup failed'),
+    rejectAnyEffort: true,
+  }))
+  apply(infoError.ctx, { cliPath: cli, cacheMinutes: 10, debug: false })
+  const infoErrorRun = await runSse(infoError.state.registered.handler, `/zsearch/api/stream?q=${encodeURIComponent('元数据失败回退省略测试')}`)
+  assert.equal(byName(infoErrorRun.events, 'answer-status').length, 0)
+  assert.equal(byName(infoErrorRun.events, 'done')[0].answer.finish, 'stop')
+  assert.ok(infoErrorCalls.efforts.length >= 3 && infoErrorCalls.efforts.every((effort) => effort === undefined))
 
   console.log('server integration ok')
   console.log(`  calls: expand=${calls.expand} curate=${calls.curate} answer=${calls.answer} backfill=${calls.backfill}`)
