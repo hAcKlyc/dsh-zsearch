@@ -10,7 +10,7 @@
 [![GitHub stars](https://img.shields.io/github/stars/hAcKlyc/dsh-zsearch?style=flat&label=GitHub)](https://github.com/hAcKlyc/dsh-zsearch)
 [![dsh-plugin](https://img.shields.io/badge/topic-dsh--plugin-0e7490)](https://github.com/topics/dsh-plugin)
 
-版本 **0.3.3** · Apache-2.0 · 适用于 DSH `>=0.2.2-rc.1 <0.3.0`
+版本 **0.3.4** · Apache-2.0 · 适用于 DSH `>=0.2.2-rc.1 <0.3.0`
 npm 已发布：[dsh-zsearch](https://www.npmjs.com/package/dsh-zsearch)；也提供 [GitHub Release](https://github.com/hAcKlyc/dsh-zsearch/releases/tag/v0.3.0) 和源码安装。
 
 <p align="center">

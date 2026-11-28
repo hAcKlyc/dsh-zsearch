@@ -3,6 +3,13 @@
 `dsh-zsearch` 的版本变更。版本号只描述插件包本身；`docs/versions.md` 记录它与 DSH、知乎
 Skill、CLI 的当前组合状态。
 
+## 0.3.4 — 2026-11-28
+
+### Fixed
+
+- 不再对每次模型调用固定传 `reasoningEffort: 'off'`：检索式改写、结果筛选、补卡与回答流改为按模型元数据解析，模型不支持 `off` 时回退到该模型的最低档，非推理模型则省略该参数；修复 `UNSUPPORTED_REASONING_EFFORT` 造成的「回答生成中断」以及改写/筛选静默降级（由 @buaazp 在 [#2](https://github.com/hAcKlyc/dsh-zsearch/pull/2) 定位并修复）。
+- 模型元数据查询按 `provider/model` 缓存 5 分钟且失败不缓存，避免每次 LLM 调用都多一次元数据往返，同时保留模型切换后重新解析。
+
 ## 0.3.3 — 2026-11-19
 
 ### Added

@@ -539,19 +539,44 @@ function collectWeb(cliPath, queries) {
       .filter((item) => item.host && !isZhihuHost(item.host) && !/标签|归档|分类|tag|category/i.test(item.title ?? '')))
 }
 
+const EFFORT_TTL_MS = 5 * 60_000
+const EFFORT_CACHE_LIMIT = 8
+const effortCache = new WeakMap()
+
+function effortIds(info) {
+  const efforts = info?.reasoning?.efforts
+  if (!Array.isArray(efforts)) return null
+  return efforts
+    .map((item) => item?.id)
+    .filter((id) => typeof id === 'string' && id.length > 0)
+}
+
+function pickEffort(ids, preferred) {
+  if (ids === null) return undefined
+  return ids.includes(preferred) ? preferred : ids[0]
+}
+
 async function resolveReasoningEffort(llm, selection, preferred, signal) {
   if (!preferred) return undefined
   if (typeof llm?.resolveModelInfo !== 'function') return preferred
+  let byRoute = effortCache.get(llm)
+  if (!byRoute) {
+    byRoute = new Map()
+    effortCache.set(llm, byRoute)
+  }
+  const route = `${selection.provider}\u0000${selection.model}`
+  const hit = byRoute.get(route)
+  if (hit && hit.expires > Date.now()) return pickEffort(hit.ids, preferred)
+  let ids
   try {
-    const info = await llm.resolveModelInfo(selection.provider, selection.model, signal)
-    const efforts = info?.reasoning?.efforts
-    if (!Array.isArray(efforts) || efforts.length === 0) return undefined
-    if (efforts.some((item) => item?.id === preferred)) return preferred
-    return efforts[0]?.id ?? undefined
+    ids = effortIds(await llm.resolveModelInfo(selection.provider, selection.model, signal))
   } catch (error) {
     if (signal?.aborted) throw error
     return undefined
   }
+  if (byRoute.size >= EFFORT_CACHE_LIMIT) byRoute.delete(byRoute.keys().next().value)
+  byRoute.set(route, { ids, expires: Date.now() + EFFORT_TTL_MS })
+  return pickEffort(ids, preferred)
 }
 
 async function streamText(ctx, { system, prompt, maxTokens, timeoutMs, reasoningEffort, label = 'llm' }) {

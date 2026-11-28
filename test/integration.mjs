@@ -85,6 +85,7 @@ function makeLlm(calls, behavior = {}) {
   const base = {
     ...(behavior.modelInfo !== undefined ? {
       async resolveModelInfo() {
+        calls.modelInfo = (calls.modelInfo ?? 0) + 1
         if (behavior.modelInfo instanceof Error) throw behavior.modelInfo
         return behavior.modelInfo
       },
@@ -551,6 +552,10 @@ async function main() {
   const offSupportedRun = await runSse(offSupported.state.registered.handler, `/zsearch/api/stream?q=${encodeURIComponent('支持关闭推理测试')}`)
   assert.equal(byName(offSupportedRun.events, 'done')[0].answer.finish, 'stop')
   assert.ok(offSupportedCalls.efforts.length >= 3 && offSupportedCalls.efforts.every((effort) => effort === 'off'))
+  assert.equal(offSupportedCalls.modelInfo, 1, 'model metadata resolved once per request')
+  const offSupportedAgain = await runSse(offSupported.state.registered.handler, `/zsearch/api/stream?q=${encodeURIComponent('支持关闭推理测试第二轮')}`)
+  assert.equal(byName(offSupportedAgain.events, 'done')[0].answer.finish, 'stop')
+  assert.equal(offSupportedCalls.modelInfo, 1, 'model metadata lookup is cached across requests')
 
   const noOffCalls = { expand: 0, curate: 0, answer: 0, backfill: 0 }
   const noOff = makeCtx(makeLlm(noOffCalls, {
@@ -562,6 +567,7 @@ async function main() {
   assert.equal(byName(noOffRun.events, 'answer-status').length, 0)
   assert.equal(byName(noOffRun.events, 'done')[0].answer.finish, 'stop')
   assert.ok(noOffCalls.efforts.length >= 3 && noOffCalls.efforts.every((effort) => effort === 'low'))
+  assert.equal(noOffCalls.modelInfo, 1, 'fallback effort resolved from one cached lookup')
 
   const nonReasoningCalls = { expand: 0, curate: 0, answer: 0, backfill: 0 }
   const nonReasoning = makeCtx(makeLlm(nonReasoningCalls, {
@@ -573,6 +579,7 @@ async function main() {
   assert.equal(byName(nonReasoningRun.events, 'answer-status').length, 0)
   assert.equal(byName(nonReasoningRun.events, 'done')[0].answer.finish, 'stop')
   assert.ok(nonReasoningCalls.efforts.length >= 3 && nonReasoningCalls.efforts.every((effort) => effort === undefined))
+  assert.equal(nonReasoningCalls.modelInfo, 1, 'non-reasoning model resolved once')
 
   const infoErrorCalls = { expand: 0, curate: 0, answer: 0, backfill: 0 }
   const infoError = makeCtx(makeLlm(infoErrorCalls, {
@@ -584,6 +591,7 @@ async function main() {
   assert.equal(byName(infoErrorRun.events, 'answer-status').length, 0)
   assert.equal(byName(infoErrorRun.events, 'done')[0].answer.finish, 'stop')
   assert.ok(infoErrorCalls.efforts.length >= 3 && infoErrorCalls.efforts.every((effort) => effort === undefined))
+  assert.equal(infoErrorCalls.modelInfo, infoErrorCalls.efforts.length, 'failed metadata lookup is never cached')
 
   console.log('server integration ok')
   console.log(`  calls: expand=${calls.expand} curate=${calls.curate} answer=${calls.answer} backfill=${calls.backfill}`)
